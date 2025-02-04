@@ -1,0 +1,136 @@
+@font-face {
+    font-family: 'Poppins';
+    src: url('../../Poppins/Poppins-Regular.ttf') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Poppins-Bold';
+    src: url('../../Poppins/Poppins-Bold.ttf') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+  }
+
+#calendar{
+    color:#00312c;
+    margin:4rem;
+    padding:1rem;
+  
+    font-family:'Poppins';
+}
+
+header{
+    padding:0rem;
+    background-color:#00312c;
+    margin:0;
+    color:white;
+    font-family: 'Poppins';
+    font-size: 14px;
+
+    display: flex;
+    flex-direction: row;
+    gap:1rem;
+    padding-left:8rem;
+    /*justify-content: center; þetta lætur fara til hliðar í miðjuna*/
+    /*align-items er held ég upp og niður í miðjunni*/
+}
+
+header p{
+    text-align:center;
+}
+
+.fc-scrollgrid {
+    height: 100%; /* Make the grid fill the container */
+  }
+
+body{
+    margin:0;
+}
+h1{
+    font-family:'Poppins';
+}
+
+.box{
+    box-sizing: border-box;
+    text-align: center;
+    
+    padding:5rem;
+    padding-top:4rem;
+    padding-bottom:4rem;
+    background-color:#16554d;
+    font-family:"Poppins";
+    color:white;
+}
+
+.box label{
+    font-size: 42pt;
+    font-family:'Poppins-Bold'
+}
+
+.box1{
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 22pt;
+    padding:0rem;
+    padding-left:8rem;
+    background-color:white;
+    font-family:"Poppins";
+    color:white;
+}
+
+.fc-event.p-22 {
+    padding: 0rem;}
+  
+img{
+    display:block;
+    width:9%;
+    height:auto;
+    padding:0;
+    margin:0;
+}
+
+.texti{
+    font-family:'Poppins';
+    padding-left:4rem;
+    padding-top:3rem;
+    font-weight:400;
+    color:#00312c;
+    font-size: 16px;
+    line-height: 27px;
+}
+
+
+  .fc-multi-month-view {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  /* Forces each month to take up the full width and wrap to the next line */
+  .fc-daygrid-month {
+    flex: 1 1 100%;  /* Each month takes full width, 100% */
+    margin-bottom: 20px; /* Space between months */
+  }
+  
+  /* Optional: add custom styling to calendar header */
+  .fc-toolbar {
+    margin-bottom: 10px;  /* Space between header and calendar */
+  }
+  
+  /* Optional: Customize individual month appearance */
+  .fc-daygrid-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .fc-event-time{
+    display: none !important; 
+
+  }
+
+  .fc-event-title{
+    color:black;
+  }
+  
