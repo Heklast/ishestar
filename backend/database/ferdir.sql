@@ -5,7 +5,9 @@ CREATE TABLE trips (
   title VARCHAR(255) NOT NULL,         
   start_date DATE NOT NULL,            
   end_date DATE NOT NULL,
-  link VARCHAR(500)          
+  link VARCHAR(500),
+  riding_days INTEGER,
+  difficulty VARCHAR(255) NOT NULL      
 );
 
 

@@ -20,7 +20,7 @@ const pool = new Pool({
 // Route to get trips from the database
 app.get("/trips", async (req, res) => {
   try {
-    const result = await pool.query("SELECT id, title, start_date, end_date, link FROM trips");
+    const result = await pool.query("SELECT id, title, start_date, end_date, link, riding_days, difficulty FROM trips");
     res.json(result.rows);
   } catch (error) {
     console.error(error);
