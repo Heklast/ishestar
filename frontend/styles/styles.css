@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Poppins';
-    src: url('../../Poppins/Poppins-Regular.ttf') format('woff2');
+    src: url('../../Poppins/Poppins-Medium.ttf') format('woff2');
     font-weight: normal;
     font-style: normal;
   }
@@ -15,7 +15,7 @@
     color:#00312c;
     margin:4rem;
     padding:1rem;
-  
+
     font-family:'Poppins';
 }
 
@@ -91,7 +91,8 @@ img{
 
 .texti{
     font-family:'Poppins';
-    padding-left:4rem;
+    padding-left:9rem;
+    padding-right: 9rem;
     padding-top:3rem;
     font-weight:400;
     color:#00312c;
@@ -99,30 +100,26 @@ img{
     line-height: 27px;
 }
 
+footer{
+  background-color:#16554d;
+  padding:4rem;
+  font-family:'Poppins'
+}
+
+.fotur{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap:5rem;
+  color: white;
+  font-size: 14px;
+}
 
   .fc-multi-month-view {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: flex-start;
-  }
-  
-  /* Forces each month to take up the full width and wrap to the next line */
-  .fc-daygrid-month {
-    flex: 1 1 100%;  /* Each month takes full width, 100% */
-    margin-bottom: 20px; /* Space between months */
-  }
-  
-  /* Optional: add custom styling to calendar header */
-  .fc-toolbar {
-    margin-bottom: 10px;  /* Space between header and calendar */
-  }
-  
-  /* Optional: Customize individual month appearance */
-  .fc-daygrid-header {
-    font-size: 1.2em;
-    font-weight: bold;
-    text-align: center;
   }
 
   .fc-event-time{
@@ -131,6 +128,71 @@ img{
   }
 
   .fc-event-title{
-    color:black;
+    color:#3B3024;
+    font-family:'Poppins-Bold';
+  }
+  .fc-event-main{
+    color:#3B3024;
+    font-family:'Poppins-Bold';
+    /*margin:0.3rem; ef ég vil að eventarnir overlappi smá*/ 
   }
   
+  .fc-event-title-container{
+    padding:.5rem; /*þetta er ekki að gera neitt held ég*/
+  }
+
+  .fc-daygrid-event:hover{
+    opacity: 1;
+  }
+
+  .fc-daygrid-day-number{
+    color:#3B3024;
+  }
+
+
+  .linkar{
+    text-decoration: none;
+    color:white;
+  }
+
+  .fc-today-button.fc-button.fc-button-primary{
+    display:none;
+  }
+  
+  .jaa{
+    color:#DCDCDC;
+    margin-bottom: 0.5rem;
+    margin-left:0.5rem;
+  }
+
+  .jaa span{
+    font-family: 'Poppins';
+  }
+
+  .hringur{
+    width: 20px;
+    height: 20px;
+    background-color: #8A9A5B; 
+    border-radius: 50%;
+    margin-left:9rem;
+  }
+  .hringur2{
+    width: 20px;
+    height: 20px;
+    background-color:#2C5F2D ; 
+    border-radius: 50%;
+    margin-left:9rem;
+  }
+  .hringur3{
+    width: 20px;
+    height: 20px;
+    background-color:#6B3F1F ; 
+    border-radius: 50%;
+    margin-left:9rem;
+  }
+
+.difficulty{
+  display:flex;
+  align-items: center;
+  gap:0.7rem;
+}
