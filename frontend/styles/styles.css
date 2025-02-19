@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Poppins';
-    src: url('../../Poppins/Poppins-Medium.ttf') format('woff2');
+    src: url('../../Poppins/Poppins-Light.ttf') format('woff2');
     font-weight: normal;
     font-style: normal;
   }
@@ -102,18 +102,36 @@ img{
 
 footer{
   background-color:#16554d;
-  padding:4rem;
+  padding:0rem;
   font-family:'Poppins'
 }
 
 .fotur{
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap:5rem;
+  flex-direction: column;
+  text-align: center;
+ 
   color: white;
   font-size: 14px;
 }
+
+.fotur h2{
+  padding-top:1rem;
+  font-size: xx-large;
+  font-family: cursive; /*finna letrið*/
+}
+
+.nedst{
+  display: flex;
+  justify-content: space-between;
+  padding:1rem;
+  margin:0;
+}
+.nedst p{
+margin:0;
+padding:0;
+}
+
 
   .fc-multi-month-view {
     display: flex;
@@ -195,4 +213,23 @@ footer{
   display:flex;
   align-items: center;
   gap:0.7rem;
+}
+#elementToPopUp {
+  display: none;
+  color:red;
+}
+
+.tippy-box[data-theme~='custom']{
+  background-color: 'red'; 
+  color: #ecf0f1;
+  font-size: 12px;
+  border-radius: 0;
+  
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  
+}
+
+.tippy-box[data-theme~='custom'] .tippy-content{
+  background-color:#36454F;
+  padding:1rem;
 }

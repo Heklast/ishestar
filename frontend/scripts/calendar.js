@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', async function () {
           title: trip.title,
           start: trip.start_date,
           end: addOneDay(trip.end_date),
-          color:getColor(trips, trip.title),
+          difficulty: trip.difficulty,
+          color:getColor(trips, trip.difficulty),
           href: trip.link,
           riding_days: trip.riding_days,
-          difficulty: trip.difficulty,
           groupId: trip.title,
         }));
       } catch (error) {
@@ -34,12 +34,18 @@ document.addEventListener('DOMContentLoaded', async function () {
      * @param {*} titl 
      * @returns 
      */
-    function getColor(trips, titl){
-            const colors = ['#6B3F1F', '#8A9A5B', '#2C5F2D'];//'#8A9A5B', '#B24C27', '#A08C64'
+    function getColor(trips, level){
+            const colors = ['#8A9A5B', '#2C5F2D', '#6B3F1F'];//'#8A9A5B', '#B24C27', '#A08C64'
            // const tripss=trips.map(trip=>({title:trip.title}))
             //const index=tripss.findIndex(trip=>trip.title==titl);
-            const index=Math.floor(Math.random()*3);
-            return colors[index];
+            const difficultyy=['beginner', 'intermediate', 'advanced'];
+            for (i of difficultyy){
+              if(level===i){
+                return colors[difficultyy.findIndex(el=> el===i)];}
+            }
+            
+            //const tripss=trips.map(trip=>({difficulty:trip.difficulty}))
+            return;
     }
 
     /**
@@ -82,6 +88,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         return { domNodes: [eventDiv] };}
       },
       eventDidMount: function(info) {
+        tippy(info.el, {
+          content: `
+              <strong>${info.event.title}</strong><br>
+              Riding Days: ${info.event.extendedProps.riding_days || 'N/A'}<br>
+              Difficulty: ${info.event.extendedProps.difficulty || 'Unknown'}<br>
+              Description: ${info.event.extendedProps.description}`, //setja inn description á allar ferðir
+          allowHTML: true,
+          placement: 'top',
+          theme: 'custom',
+          animation: 'shift-away', //líka hægt að fadea hérna ef við viljum
+          duration: [200, 10],
+      });
         //hægt að ýta
         info.el.style.cursor = 'pointer';
         info.el.addEventListener('click', function() {
@@ -91,19 +109,23 @@ document.addEventListener('DOMContentLoaded', async function () {
             
           }
           
-        });
+        })
+        
+      
         info.el.setAttribute('data-event-id', info.event.id);
-
         info.el.addEventListener('mouseenter', function() {
             let relatedEvents = document.querySelectorAll(`[data-event-id="${info.event.id}"]`);
             relatedEvents.forEach(el => el.style.opacity = "0.4");
+
         });
 
         info.el.addEventListener('mouseleave', function() {
             let relatedEvents = document.querySelectorAll(`[data-event-id="${info.event.id}"]`);
             relatedEvents.forEach(el => el.style.opacity = "1");
+      
         });
       }
+    
     });
   
     calendar.render();

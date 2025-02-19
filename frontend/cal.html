@@ -2,6 +2,9 @@
 
 <html lang='en'>
   <head>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css">
     
     <title>calendar</title>
     <link rel="stylesheet" href="./styles/styles.css">
@@ -21,6 +24,7 @@
       <p class="texti"> Here you can see the dates of all of our long trips. Trips that are the same color have something in common... </p>
       <div class="difficulty">
       <div class="hringur"> </div>
+     
       <p> Beginner</p></div>
       <div class="difficulty">
       <div class="hringur2"> </div>
@@ -30,12 +34,14 @@
       <p> Advanced</p></div></div>
       
     <div id='calendar'></div>
+    
 </main>
 <footer>
   <div class="fotur">
+    <h2>Riding the Icelandic way since 1982!</h2>
+    <div class="nedst">
     <p>ishestar.is</p>
-    <p>Riding the Icelandic way since 1982!</p>
-    <p>Íshestar | Allur réttur áskilinn</p>
+    <p>Íshestar | Allur réttur áskilinn</p></div>
   </div>
 </footer>
 <script src="./scripts/calendar.js"></script>
