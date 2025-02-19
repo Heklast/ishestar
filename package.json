@@ -6,5 +6,17 @@
     "express": "^4.21.2",
     "fullcalendar": "^6.1.15",
     "pg": "^8.13.1"
-  }
+  },
+  "name": "ishestar",
+  "version": "1.0.0",
+  "description": "calendar sida",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./backend/server.js"
+
+  },
+  "author": "",
+  "license": "ISC"
 }

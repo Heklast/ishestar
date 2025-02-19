@@ -224,9 +224,7 @@ padding:0;
   color: #ecf0f1;
   font-size: 12px;
   border-radius: 0;
-  
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-  
 }
 
 .tippy-box[data-theme~='custom'] .tippy-content{
