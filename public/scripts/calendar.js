@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async function () {
      */
     async function fetchTrips() {
       try {
-        const response = await fetch("http://localhost:3000/trips");
+        const response = await fetch("/trips");
         const trips = await response.json();
         console.log(trips);
         return trips.map(trip => ({
