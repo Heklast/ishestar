@@ -63,6 +63,10 @@ document.addEventListener('DOMContentLoaded', async function () {
       initialView: 'dayGridMonth',
       slotEventOverlap: false,
       fixedWeekCount:false,
+      headerToolbar: {
+       left:'',
+        center: 'title',
+      },
       validRange: {
         start: '2025-06-01',
         end: '2025-10-01',

@@ -5,7 +5,10 @@
 
 
 # TODO
-## *Laga link og riding days á into the far eastCHECK
-## *checka á þessu vopnafjörðs og into the far east dæmi, 2 ferðir en í excel þá eins og sama ferðin??
-## *afh er saltvík comfort ekki innni í excel skjalinu??
-## *setja inn description á allar ferðir
+## *breyta nöfnum á öllum ferðum
+## bæat inn saltvík
+## *setja inn description á allar ferðir, þau skrifa texta
+## *beige eða ljósgrár á popup
+## *finna út úr excel dótinu
+## *laga fótinn, betur inn á síðuna
+## *letrið
