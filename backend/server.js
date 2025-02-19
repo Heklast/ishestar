@@ -3,18 +3,22 @@ const { Pool } = require("pg");
 const cors = require("cors");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Enable CORS (allows frontend to request data from backend)
 app.use(cors());
 
 // Connect to PostgreSQL
+//const pool = new Pool({
+  //user: "postgres",
+  //host: "localhost",
+  //database: "postgres",
+  //password: "Hekla2890",
+  //port: 5432, 
+//});
 const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "postgres",
-  password: "Hekla2890",
-  port: 5432, // Default PostgreSQL port
+  connectionString: process.env.DATABASE_URL || "postgres://postgres:Hekla2890@localhost:5432/postgres",
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false, // SSL only for Render
 });
 
 // Route to get trips from the database
