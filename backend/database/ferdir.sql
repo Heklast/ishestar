@@ -7,7 +7,8 @@ CREATE TABLE trips (
   end_date DATE NOT NULL,
   link VARCHAR(500),
   riding_days INTEGER,
-  difficulty VARCHAR(255) NOT NULL      
+  difficulty VARCHAR(255) NOT NULL,
+  availability INTEGER default NULL 
 );
 
 

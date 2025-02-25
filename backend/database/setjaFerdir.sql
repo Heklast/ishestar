@@ -28,3 +28,5 @@ VALUES
   ;
 
 SELECT * from trips;
+SELECT id, title, start_date, end_date, availability FROM trips;
+SELECT title, start_date, availability FROM trips;
