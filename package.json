@@ -3,19 +3,21 @@
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/multimonth": "^6.1.15",
     "cors": "^2.8.5",
+    "csv-parse": "^5.6.0",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "fullcalendar": "^6.1.15",
-    "pg": "^8.13.1"
+    "googleapis": "^144.0.0",
+    "pg": "^8.13.1",
+    "xlsx": "^0.18.5"
   },
   "name": "ishestar",
   "version": "1.0.0",
   "description": "calendar sida",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./backend/server.js"
-
   },
   "author": "",
   "license": "ISC"

@@ -28,10 +28,13 @@ html, body {
     color:#00312c;
     margin:4rem;
     padding:1rem;
-
+    padding-top: 0;
     font-family:'Poppins';
 }
 
+.fc-daygrid-event {
+  border-color:transparent !important;
+}
 
 header{
     padding:0rem;
@@ -263,9 +266,27 @@ padding:0;
   font-size: 12px;
   border-radius: 0;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  font-family: 'Poppins';
 }
 
 .tippy-box[data-theme~='custom'] .tippy-content{
   background-color:#36454F;
   padding:1rem;
 }
+
+.checkbogcal{
+  display:flex;
+  flex-direction:column;
+  
+  align-items:baseline;
+  padding-top:7rem;
+  font-family: 'Poppins';
+}
+
+.checkb{
+  padding-left:2rem;
+  margin-left:2rem;
+}
+
+
+
