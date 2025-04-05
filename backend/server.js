@@ -3,7 +3,7 @@ const { Pool } = require("pg");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
-const getExcelData= require("../public/scripts/excel.js")
+const getExcelData= require("../frontend/public/scripts/excel.js")
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,11 +38,11 @@ async function initializeDatabase() {
 initializeDatabase();
 
 
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "../frontend/public")));
 
 // Serve cal.html as the homepage
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/cal.html"));
+  res.sendFile(path.join(__dirname, "../frontend/public/cal.html"));
 });
 
 // Route to get trips from the database

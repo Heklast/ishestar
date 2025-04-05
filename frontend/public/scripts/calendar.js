@@ -21,19 +21,23 @@ document.addEventListener('DOMContentLoaded', async function () {
       const trips = await response.json();
       console.log(trips);
 
-      return trips.map(trip => ({
+      return trips.map(trip => {
+        const isFull = parseInt(trip.availability) === 0;
+        const availabilityClass = isFull ? 'trip-full' : 'trip-available';
+    return{
         id: trip.id,
         title: trip.title,
         start: trip.start_date,
         end: addOneDay(trip.end_date),
         difficulty: trip.difficulty,
-        backgroundColor: getColor(trip.difficulty, trip.availability), 
-        textColor: parseInt(trip.availability) === 0 ? '#555555' : '#FFFFFF',
+        backgroundColor: getColor(trip.difficulty), 
+        textColor: '#FFFFFF',
         href: trip.link,
         riding_days: trip.riding_days,
         groupId: trip.title,
         availability: trip.availability,
-      }));
+        className: [availabilityClass],
+      }});
     } catch (error) {
       console.error("Error fetching trips:", error);
       return [];
@@ -45,12 +49,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   /**
-   * Get color based on availability & difficulty
+   * Litir based on availability og difficulty
    */
-  function getColor(level, avail) {
-    if (parseInt(avail) === 0) {
-      return '#E0E0E0'; //grár f unavailable trips
-    } else {
+  function getColor(level) {
       const colors = ['#8A9A5B', '#2C5F2D', '#6B3F1F'];
       const difficultyLevels = ['beginner', 'intermediate', 'advanced'];
       for (let i = 0; i < difficultyLevels.length; i++) {
@@ -58,7 +59,6 @@ document.addEventListener('DOMContentLoaded', async function () {
           return colors[i];
         }
       }
-    }
     return;
   }
 
@@ -99,11 +99,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         return { domNodes: [eventDiv] };
       },
       eventDidMount: function (info) {
+        const availabilityText = parseInt(info.event.extendedProps.availability) > 0
+    ? "A few seats still available"
+    : "Fully booked";
         tippy(info.el, {
           content: `
             Riding Days: ${info.event.extendedProps.riding_days || 'N/A'}<br>
             Difficulty: ${info.event.extendedProps.difficulty || 'Unknown'}<br>
-            Description: ${info.event.extendedProps.description || 'No description available'}`,
+            <br>
+            Availability: ${availabilityText}`,
           allowHTML: true,
           placement: 'top',
           theme: 'custom',
