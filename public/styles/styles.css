@@ -17,9 +17,8 @@
     font-style: normal;
   }
 
-  /* Prevent horizontal scrolling */
 html, body {
-  overflow-x: hidden; /* No horizontal scrolling */
+  overflow-x: hidden; /*ekkert lárétt skroll */
   width: 100%;
   margin: 0;
   padding: 0;
