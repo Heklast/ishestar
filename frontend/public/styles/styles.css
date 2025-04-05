@@ -190,7 +190,7 @@ padding:0;
   
 
   .fc-daygrid-event:hover{
-    opacity: 1;
+    opacity: 0.9;
   }
 
   .fc-daygrid-day-number{
@@ -289,4 +289,7 @@ padding:0;
 }
 
 
-
+.fc-daygrid-event.trip-full:hover,
+.fc-daygrid-event.trip-full:hover .fc-event-main .jaa {
+  background-color: #E0E0E0 !important;
+}
