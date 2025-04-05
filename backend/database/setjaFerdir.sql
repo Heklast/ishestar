@@ -16,7 +16,7 @@ VALUES
   ('New Frontiers', '2025-07-10', '2025-07-18', 'https://www.ishestar.is/packages/new-frontier/',8, 'advanced'),
   ('Beyond Kjölur', '2025-07-22', '2025-07-31', 'https://www.ishestar.is/packages/beyond-kjolur-off-the-beaten-path/',8, 'advanced'),
   ('Chasing Waterfalls', '2025-08-15', '2025-08-21', 'https://www.ishestar.is/packages/chasing-waterfalls-foss-comfort-tour/',5, 'intermediate'),
-  ('Black Beach', '2025-08-21', '2025-08-23', 'https://www.ishestar.is/packages/black-sand-beach-ride/',2, 'beginner'),
+  ('Black Beach', '2025-08-21', '2025-08-23', 'https://www.ishestar.is/packages/black-sand-beach-ride/',2, 'intermediate'),
   ('Landmannalaugar Adventure', '2025-08-23', '2025-08-29', 'https://www.ishestar.is/packages/landmannalaugar-adventure/',6, 'intermediate'),
   ('Hekla Adventure', '2025-08-08', '2025-08-13', 'https://www.ishestar.is/packages/hekla-adventure-2/',5, 'intermediate'),
   ('Highland Express', '2025-08-06', '2025-08-09', 'https://www.ishestar.is/packages/highland-express-2/',4, 'intermediate'),

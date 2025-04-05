@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 
   /**
-   * Fetch trips from database
-   * @returns {Array} trips array
+   * Sækja ferðir í database
+   * @returns {Array} trips
    */
   async function fetchTrips() {
     try {
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         riding_days: trip.riding_days,
         groupId: trip.title,
         availability: trip.availability,
-        className: [availabilityClass],
+        className: [availabilityClass, `event-${trip.id}`],
       }});
     } catch (error) {
       console.error("Error fetching trips:", error);
@@ -49,11 +49,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   /**
-   * Litir based on availability og difficulty
+   * Litir based on difficulty
    */
   function getColor(level) {
-      const colors = ['#8A9A5B', '#2C5F2D', '#6B3F1F'];
-      const difficultyLevels = ['beginner', 'intermediate', 'advanced'];
+      const colors = ['#2C5F2D', '#6B3F1F'];
+      const difficultyLevels = ['intermediate', 'advanced'];
       for (let i = 0; i < difficultyLevels.length; i++) {
         if (level === difficultyLevels[i]) {
           return colors[i];
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         let eventDiv = document.createElement('div');
         eventDiv.className = 'jaa';
 
-        eventDiv.style.backgroundColor = info.event.backgroundColor;
+        //eventDiv.style.backgroundColor = info.event.backgroundColor;
         eventDiv.style.color = info.event.textColor;
 
         eventDiv.innerHTML = `${info.event.title}`;
@@ -100,14 +100,14 @@ document.addEventListener('DOMContentLoaded', async function () {
       },
       eventDidMount: function (info) {
         const availabilityText = parseInt(info.event.extendedProps.availability) > 0
-    ? "A few seats still available"
-    : "Fully booked";
+    ? "<span style='font-size:14px'><b>A few seats still available!</b></span>"
+    :  "<span style='font-size:14px'><b>Fully booked</b></span>";
         tippy(info.el, {
           content: `
             Riding Days: ${info.event.extendedProps.riding_days || 'N/A'}<br>
             Difficulty: ${info.event.extendedProps.difficulty || 'Unknown'}<br>
             <br>
-            Availability: ${availabilityText}`,
+             ${availabilityText}`,
           allowHTML: true,
           placement: 'top',
           theme: 'custom',
@@ -121,6 +121,31 @@ document.addEventListener('DOMContentLoaded', async function () {
             window.open(info.event.extendedProps.href, "_blank");
           }
         });
+        const isFull = info.event.classNames.includes("trip-full");
+
+        info.el.setAttribute('data-event-id', info.event.id);
+        info.el.addEventListener('mouseenter', function(){
+          let relatedEvents=document.querySelectorAll(`[data-event-id="${info.event.id}"]`);
+          relatedEvents.forEach(el => {
+            if (isFull) {
+              el.style.backgroundColor = "#E0E0E0";
+            } else {
+              el.style.opacity = "0.8";
+            }
+          });});
+          
+
+        info.el.addEventListener('mouseleave', function(){
+          const originalColor = getColor(info.event.extendedProps.difficulty);
+            let relatedEvents=document.querySelectorAll(`[data-event-id="${info.event.id}"]`);
+            relatedEvents.forEach(el => {
+              if (isFull) {
+                el.style.backgroundColor =originalColor;
+              } else {
+                el.style.opacity = "1";
+              }
+            });});
+            
       }
     });
 

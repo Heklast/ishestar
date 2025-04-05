@@ -1,9 +1,18 @@
+const path = require("path");
+const dotenvPath = path.join(__dirname, ".env");
+require("dotenv").config({ path: dotenvPath });
+
+console.log("🧪 Loading .env from:", dotenvPath);
+console.log("✅ DATABASE_URL loaded:", process.env.DATABASE_URL);
+
 const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
 const fs = require("fs");
-const path = require("path");
-const getExcelData= require("../frontend/public/scripts/excel.js")
+const getExcelData = require("../frontend/public/scripts/excel.js");
+
+console.log("✅ DATABASE_URL loaded:", process.env.DATABASE_URL);
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;

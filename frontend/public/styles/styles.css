@@ -211,6 +211,8 @@ padding:0;
     color:#DCDCDC;
     margin-bottom: 0.5rem;
     margin-left:0.5rem;
+    display:flex;
+    justify-content: center;
   }
 
   .jaa span{

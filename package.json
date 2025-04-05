@@ -4,6 +4,7 @@
     "@fullcalendar/multimonth": "^6.1.15",
     "cors": "^2.8.5",
     "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.7",
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "fullcalendar": "^6.1.15",
