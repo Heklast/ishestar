@@ -63,7 +63,6 @@ async function updateAvailability() {
   try {
     console.log("Sækja frá Google Sheets...");
     const records = await getExcelData();
-    console.log("📋 Records from Google Sheets:", records);
 
     if (!records || records.length === 0) {
       console.log("Ekkert data frá sheets");
@@ -86,14 +85,12 @@ async function updateAvailability() {
         console.warn(`Invalid availability for ${Tour}:`, availability);
         continue;
       }
-      console.log("📄 Parsed sheet records:", records);
 
       const result = await pool.query(
         `UPDATE trips SET availability = $1 WHERE TRIM(title) ILIKE TRIM($2) AND start_date = $3 RETURNING *`,
         [parsedAvailability, Tour, start_date]
       );
 
-      
       if (result.rowCount === 0) {
         console.warn(`No matching trip found for ${Tour} (${start_date}). Check database.`);
       } else {

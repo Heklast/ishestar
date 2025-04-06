@@ -12,10 +12,10 @@ async function getExcelData() {
     const records = parse(csv, {
       columns: true,
       skip_empty_lines: true,
-      trim: true, // trims leading/trailing spaces
+      trim: true, //trimmar leading/trailing spaces
     });
 
-    // Convert availability to integer for consistency
+    //availability í int
     records.forEach(record => {
       if (record["Available seats"]) {
         record["Available seats"] = parseInt(record["Available seats"], 10) || 0;
@@ -24,7 +24,7 @@ async function getExcelData() {
 
     return records;
   } catch (error) {
-    console.error("❌ Error fetching Google Sheets data:", error);
+    console.error("Error fetching Google Sheets data:", error);
     return [];
   }
 }
