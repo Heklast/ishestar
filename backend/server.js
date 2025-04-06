@@ -5,7 +5,7 @@ const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
 const fs = require("fs");
-const getExcelData = require("../frontend/public/scripts/excel.js");
+const getExcelData = require("./excel.js");
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
@@ -63,6 +63,7 @@ async function updateAvailability() {
   try {
     console.log("Sækja frá Google Sheets...");
     const records = await getExcelData();
+    console.log("📋 Records from Google Sheets:", records);
 
     if (!records || records.length === 0) {
       console.log("Ekkert data frá sheets");
@@ -80,9 +81,15 @@ async function updateAvailability() {
       Tour = Tour.trim();
       start_date = new Date(start_date).toISOString().split("T")[0]; // í YYYY-MM-DD
 
+      const parsedAvailability = parseInt(availability);
+      if (isNaN(parsedAvailability)) {
+        console.warn(`Invalid availability for ${Tour}:`, availability);
+        continue;
+      }
+
       const result = await pool.query(
         `UPDATE trips SET availability = $1 WHERE TRIM(title) ILIKE TRIM($2) AND start_date = $3 RETURNING *`,
-        [parseInt(availability), Tour, start_date]
+        [parsedAvailability, Tour, start_date]
       );
 
       if (result.rowCount === 0) {
