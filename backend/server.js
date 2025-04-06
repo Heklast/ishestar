@@ -73,7 +73,7 @@ async function updateAvailability() {
     for (const record of records) {
       let { Tour, "Available seats": availability, "Start date": start_date } = record;
 
-      if (!Tour || !availability || !start_date) { //ef það vantar í eh línu í sheets þá sleppa
+      if (!Tour || !start_date || isNaN(parseInt(availability))) {
         console.log(`Skipping invalid record:`, record);
         continue;
       }
