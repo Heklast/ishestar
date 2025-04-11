@@ -64,7 +64,9 @@ app.get("/trips", async (req, res) => {
 });
 
 app.post('/rezdy-webhook', async (req, res) => {
-  //sækjum hvað við fengum úr webhooknum
+  try {
+    console.log("Webhook hit:", req.body);
+  //sækjum það sem við fengum úr webhooknum
   const { eventType, productCode } = req.body;
 
   if (eventType === 'ProductUpdated') {
@@ -77,15 +79,17 @@ app.post('/rezdy-webhook', async (req, res) => {
     //sama og updateavail, þe nota pool til að updatea databaseið
     //await updateDatabase(avail);
   }
-
   res.sendStatus(200);
-});
+} catch (error) {
+  console.error("Webhook error:", error.message);
+  res.status(500).send("Webhook handling failed");
+}});
 
 async function checkAvailandUpdateDB(availData,productData){
-  const databaseTitle = tripNameMap[availData.name];
+  const databaseTitle = tripNameMap[productData.name];
 
   if (!databaseTitle) {
-    console.warn(`No matching DB title for Rezdy name: ${availData.name}`);
+    console.warn(`No matching DB title for Rezdy name: ${productData.name}`);
     return;
   }
 
