@@ -8,11 +8,13 @@ const fs = require("fs");
 const getExcelData = require("./excel.js");
 const fetchProductFromRezdy=require("./rezdy.js");
 const fetchAvailFromRezdy=require("./rezdy.js");
+const { tripNameMap } = require('./tripNameMap');
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 
 const app = express();
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 //CORS (frontend getur requestað data frá backend)
@@ -83,11 +85,11 @@ async function checkAvailandUpdateDB(availData,productData){
   const databaseTitle = tripNameMap[availData.name];
 
   if (!databaseTitle) {
-    console.warn(`No matching DB title for Rezdy name: ${productInfo.name}`);
+    console.warn(`No matching DB title for Rezdy name: ${availData.name}`);
     return;
   }
 
-  for (const session of productData) {
+  for (const session of availData) {
     const sessionDate = session.startTimeLocal.split(' ')[0];
 
     if (session.seatsAvailable <= 0) {
