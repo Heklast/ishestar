@@ -6,9 +6,8 @@ const { Pool } = require("pg");
 const cors = require("cors");
 const fs = require("fs");
 const getExcelData = require("./excel.js");
-const fetchProductFromRezdy=require("./rezdy.js");
-const fetchAvailFromRezdy=require("./rezdy.js");
 const { tripNameMap } = require('./tripNameMap');
+const { fetchProductFromRezdy, fetchAvailFromRezdy } = require("./rezdy.js");
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
