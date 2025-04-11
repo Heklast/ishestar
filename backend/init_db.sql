@@ -8,7 +8,7 @@ CREATE TABLE trips (
   link VARCHAR(500),
   riding_days INTEGER,
   difficulty VARCHAR(255) NOT NULL,
-  availability INTEGER default NULL 
+  availability INTEGER default 1
 );
 
 DELETE from trips;
