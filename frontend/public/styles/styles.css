@@ -5,6 +5,12 @@
     font-style: normal;
   }
   @font-face {
+    font-family: 'Poppins2';
+    src: url('../Poppins/Poppins-Regular.ttf') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
     font-family: 'Poppins-Bold';
     src: url('../Poppins/Poppins-Bold.ttf') format('woff2');
     font-weight: bold;
@@ -17,9 +23,8 @@
     font-style: normal;
   }
 
-  /* Prevent horizontal scrolling */
 html, body {
-  overflow-x: hidden; /* No horizontal scrolling */
+  overflow-x: hidden; /*ekkert lárétt skroll */
   width: 100%;
   margin: 0;
   padding: 0;
@@ -65,11 +70,10 @@ p{
   margin:0;
   margin-right:10rem;
   padding:0rem;
-  margin-right:12rem;
 }
 
 .fc-scrollgrid {
-    height: 100%; /* Make the grid fill the container */
+    height: 100%; /* láta fylla containerinn */
   }
 
 body{
@@ -120,13 +124,22 @@ img{
 
 .texti{
     font-family:'Poppins';
-    padding-left:9rem;
-    padding-right: 9rem;
-    padding-top:3rem;
+    padding-left:3rem;
+    padding-right: 3rem;
+    padding-top:0rem;
     font-weight:400;
     color:#00312c;
     font-size: 16px;
     line-height: 27px;
+}
+
+.contact-setn{
+  font-family: 'Poppins';
+  color:#00312c;
+  padding:5rem;
+  text-align: center;
+  justify-content: center;
+  padding-top:0;
 }
 
 footer{
@@ -139,13 +152,12 @@ footer{
   display: flex;
   flex-direction: column;
   text-align: center;
- 
   color: white;
   font-size: 14px;
 }
 
 .fotur h2{
-  color:#D3D3D3;
+  /*color:#D3D3D3; grái liturinn*/
   padding-top:1rem;
   font-size: 40px;
   font-family: 'Brush'; /*finna letrið*/
@@ -157,6 +169,7 @@ footer{
   padding:1rem;
   margin:0;
 }
+
 .nedst p{
 margin:0;
 padding:0;
@@ -185,13 +198,9 @@ padding:0;
   }
   
   .fc-event-title-container{
-    padding:.5rem; /*þetta er ekki að gera neitt held ég*/
+    padding:.5rem; 
   }
-  
 
-  .fc-daygrid-event:hover{
-    opacity: 0.9;
-  }
 
   .fc-daygrid-day-number{
     color:#3B3024;
@@ -248,14 +257,15 @@ padding:0;
     margin:0rem;
     background-color:#6B3F1F ; 
     border-radius: 50%;
-    margin-left:15rem ;
+    margin-left:15rem;
     flex-shrink: 0;
   }
 
 .difficulty{
   display:flex;
-  align-items: flex-start;
+  align-items: center; /*eða start*/
   gap:0.7rem;
+  color:#00312c;
 }
 #elementToPopUp {
   display: none;
@@ -279,10 +289,9 @@ padding:0;
 .checkbogcal{
   display:flex;
   flex-direction:column;
-  
   align-items:baseline;
   padding-top:7rem;
-  font-family: 'Poppins';
+  font-family: 'Poppins-Bold';
 }
 
 .checkb{
@@ -295,3 +304,41 @@ padding:0;
 .fc-daygrid-event.trip-full:hover .fc-event-main .jaa {
   background-color: #E0E0E0 !important;
 }
+
+@media screen and (max-width: 900px){
+  .texti {
+    margin-left:2rem;
+    margin-right:2rem;
+  }
+  .difficulty p{ 
+   margin-right:2rem;
+   margin-left:0rem;
+  }
+  .hringur2{
+   margin-left:5rem;
+  }
+  .hringur3{
+   margin-left:5rem;
+  }
+  .hringur{
+   margin-left:5rem;
+  }
+  #calendar{
+    padding:0rem;
+    margin:1rem;
+  }
+  img{
+    width:20%;
+    padding:0;
+  }
+  .box1 {
+    padding:0;
+    justify-items: center
+  }
+  
+  header{
+    padding-left: 0;
+    justify-content:center;
+  }
+
+ }

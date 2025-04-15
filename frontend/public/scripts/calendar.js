@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         tippy(info.el, {
           content: `
             Riding Days: ${info.event.extendedProps.riding_days || 'N/A'}<br>
-            Difficulty: ${info.event.extendedProps.difficulty || 'Unknown'}<br>
+            Difficulty: ${capitalizeFirst(info.event.extendedProps.difficulty || 'Unknown')}<br>
             <br>
              ${availabilityText}`,
           allowHTML: true,
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (isFull) {
               el.style.backgroundColor = "#E0E0E0";
             } else {
-              el.style.opacity = "0.8";
+              el.style.opacity = "0.7";
             }
           });});
           
@@ -150,6 +150,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     calendar.render();
+  }
+  function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   function addOneDay(date) {
