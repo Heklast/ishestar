@@ -118,7 +118,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         info.el.style.cursor = 'pointer';
         info.el.addEventListener('click', function () {
           if (info.event.extendedProps.href) {
-            window.open(info.event.extendedProps.href, "_blank");
+            //window.open(info.event.extendedProps.href, "_blank"); þetta opnar í nýjum blank window
+            window.location.href = info.event.extendedProps.href;
           }
         });
         const isFull = info.event.classNames.includes("trip-full");
@@ -144,13 +145,13 @@ document.addEventListener('DOMContentLoaded', async function () {
               } else {
                 el.style.opacity = "1";
               }
-            });});
-            
+            });});   
       }
     });
 
     calendar.render();
   }
+
   function capitalizeFirst(str) {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
