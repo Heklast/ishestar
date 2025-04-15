@@ -1,7 +1,7 @@
 //úr rezdy nafni í database nafn
 const tripNameMap = {
     "Chasing Waterfalls - From Summit to Sea": "Chasing Waterfalls",
-    "Midsummer Beach and Mountain": "Midsummer Beach & Mountain",
+    "Midsummer Beach & Mountain": "Beach & Mountain",
     "New Frontier": "New Frontier",
     "Hekla Adventure":"Hekla Adventure",
     "Beyond Kjölur": "Beyond Kjölur",

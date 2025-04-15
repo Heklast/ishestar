@@ -331,10 +331,10 @@ padding:0;
     align-items: flex-start;
   }
   .hringur2{
-   margin-left:1rem;
+   margin-left:4rem;
   }
   .hringur3{
-   margin-left:1rem;
+   margin-left:4rem;
   }
   .hringur{
    margin-left:1rem;
@@ -364,6 +364,9 @@ padding:0;
   }
   .wrap{
     display:inline;
+  }
+  .contact-setn{
+    padding:2rem;
   }
  }
  
