@@ -314,6 +314,9 @@ padding:0;
 .fc-daygrid-event.trip-full:hover .fc-event-main .jaa {
   background-color: #E0E0E0 !important;
 }
+.wrap{
+  display: none;
+ }
 
 @media screen and (max-width: 900px){
   .texti {
@@ -328,13 +331,13 @@ padding:0;
     align-items: flex-start;
   }
   .hringur2{
-   margin-left:5rem;
+   margin-left:1rem;
   }
   .hringur3{
-   margin-left:5rem;
+   margin-left:1rem;
   }
   .hringur{
-   margin-left:5rem;
+   margin-left:1rem;
   }
   #calendar{
     padding:0rem;
@@ -359,5 +362,8 @@ padding:0;
   .box{
     line-height: 1;
   }
-
+  .wrap{
+    display:inline;
+  }
  }
+ 
