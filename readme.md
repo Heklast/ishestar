@@ -15,3 +15,17 @@
 ## *eh skrautlínur?
 ## *laga black sand
 ## *gera síu
+
+gamla í calendar.js
+
+ const eventId = info.event.id;
+        const relatedChunks = document.querySelectorAll(`[data-event-id="${eventId}"]`);
+
+        relatedChunks.forEach((chunk, index) => {
+          const chunkWidth = chunk.offsetWidth;
+          const titleFits = chunkWidth > 20; // tweak this threshold based on your font size
+      
+          // Insert title into first chunk that has space
+          if (!chunk.innerText.trim() && titleFits) {
+            chunk.innerText = info.event.title;
+          }});

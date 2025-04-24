@@ -234,22 +234,13 @@ padding:0;
     gap:1rem;
   }
 
-  .hringur{
-    width: 20px;
-    height: 20px;
-    margin:0rem;
-    background-color: #8A9A5B; 
-    border-radius: 50%;
-    margin-left:15rem;
-    flex-shrink: 0;
-  }
   .hringur2{
     width: 20px;
     height: 20px;
     margin:0rem;
     background-color:#2C5F2D ; 
     border-radius: 50%;
-    margin-left:15rem;
+    margin-left:10rem;
     flex-shrink: 0;
   }
   .hringur3{
@@ -258,7 +249,7 @@ padding:0;
     margin:0rem;
     background-color:#6B3F1F ; 
     border-radius: 50%;
-    margin-left:15rem;
+    margin-left:10rem;
     flex-shrink: 0;
   }
 

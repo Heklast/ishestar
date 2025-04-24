@@ -84,33 +84,35 @@ app.post('/rezdy-webhook', async (req, res) => {
   res.status(500).send("Webhook handling failed");
 }});
 
-async function checkAvailandUpdateDB(availData,productData){
-  const databaseTitle = tripNameMap[productData.name];
+async function checkAvailandUpdateDB(availData, productData) {
+  const databaseTitles = tripNameMap[productData.name];
 
-  if (!databaseTitle) {
+  if (!databaseTitles) {
     console.warn(`No matching DB title for Rezdy name: ${productData.name}`);
     return;
   }
 
+  const titles = Array.isArray(databaseTitles) ? databaseTitles : [databaseTitles];
+
   for (const session of availData) {
     const sessionDate = session.startTimeLocal.split(' ')[0];
+    const availableSeats = session.seatsAvailable <= 0 ? 0 : 1;
 
-    if (session.seatsAvailable <= 0) {
-      const start_date=sessionDate;
-      const availableSeats=0;
-       const result = await pool.query(
-      `UPDATE trips SET availability = $1 WHERE title=$2 AND start_date = $3 RETURNING *`,
-      [availableSeats, databaseTitle, start_date]);
+    for (const title of titles) {
+      const result = await pool.query(
+        `UPDATE trips SET availability = $1 WHERE title = $2 AND start_date = $3 RETURNING *`,
+        [availableSeats, title, sessionDate]
+      );
 
       if (result.rowCount > 0) {
-        console.log(`Updated trip: ${databaseTitle} on ${sessionDate} to availability = 0`);
+        console.log(`Updated trip: ${title} on ${sessionDate} to availability = ${availableSeats}`);
       } else {
-        console.warn(`No DB match for ${databaseTitle} on ${sessionDate}`);
+        console.warn(`No DB match for ${title} on ${sessionDate}`);
       }
-
     }
+  }
 
-} return console.log("Database updated")
+  console.log("Database updated");
 }
 
 //async function updateDatabase(productData){

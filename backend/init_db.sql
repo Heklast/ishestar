@@ -51,7 +51,7 @@ VALUES
   ('Saltvík Comfort', '2025-07-06', '2025-07-09', 'https://www.ishestar.is/packages/saltvikcomfort/',3, 'intermediate',1),
   ('Saltvík Comfort', '2025-07-19', '2025-07-22', 'https://www.ishestar.is/packages/saltvikcomfort/',3, 'intermediate',0),
   ('Saltvík Comfort', '2025-08-09', '2025-08-12', 'https://www.ishestar.is/packages/saltvikcomfort/',3, 'intermediate',0),
-  ('Saltvík Comfort', '2025-09-01', '2025-09-04', 'https://www.ishestar.is/packages/saltvikcomfort/',3, 'intermediate',1),
+  ('Saltvík Comfort', '2025-09-01', '2025-09-04', 'https://www.ishestar.is/packages/saltvikcomfort/',3, 'intermediate'),
   ('Into the far east', '2025-07-17', '2025-07-24', 'https://www.ishestar.is/packages/into-the-far-east/',7, 'advanced',0), 
   ('Ride to Vopnafjörður', '2025-08-23', '2025-09-01', 'https://www.ishestar.is/packages/ride-to-vopnafjordur/',9, 'advanced',0)
   ;

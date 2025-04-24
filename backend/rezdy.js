@@ -3,7 +3,6 @@ const REZDY_API=process.env.REZDY_API_KEY;
 
 
 async function fetchProductFromRezdy(code){
-    //þarf þetta örgl ekkert hér
     const products= await axios.get(`https://api.rezdy.com/v1/products/${code}`, {
         params: { apiKey: REZDY_API }
       });
@@ -18,14 +17,6 @@ const availability=await axios.get('https://api.rezdy.com/v1/availability', {
 });
 
 const trips=availability.data.sessions; //setja "eða tómt fylki" fyrir villumeðh
-//const sessionIsFull = sessions.some(session => session.seatsAvailable <= 0);
-
-//const isFull = sessionIsFull ? 0 : 1;
-
-//const title=products.name;
-//const seatsAvailable=availability.seatsAvailable;
-//const startDate=availability.startTimeLocal.split(" ")[0];
-// const endDate=availability.endTimeLocal.split(" ")[0];
 return trips || [];
 }
 
