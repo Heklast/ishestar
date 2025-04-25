@@ -8,6 +8,56 @@ const fs = require("fs");
 const getExcelData = require("./excel.js");
 const { tripNameMap } = require('./tripNameMap');
 const { fetchProductFromRezdy, fetchAvailFromRezdy } = require("./rezdy.js");
+const nodemailer=require('nodemailer');
+
+nodemailer.createTestAccount().then(testAccount => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass
+    }
+  });
+
+  const message = {
+    from: 'test@example.com',
+    to: 'you@example.com',
+    subject: 'Test',
+    text: 'This is a test email'
+  };
+
+  transporter.sendMail(message, (err, info) => {
+    if (err) return console.error(err);
+    console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+  });
+});
+
+const EMAIL_PASS= process.env.EMAIL_PASS;
+
+const transporter =nodemailer.createTransport({
+  service: 'gmail',
+  auth:{
+    user: 'heklast@gmail.com',
+    pass: EMAIL_PASS
+  }
+});
+
+function sendEmail(){
+  const mail={
+    from:'heklast@gmail.com',
+    to: 'heklast@gmail.com',
+    subject: 'Rezdy webhook!!!',
+    text:'Rezdy webhook yayy!!!'
+  };
+  transporter.sendMail(mail, (error,info)=>{
+    if (error){
+      console.error("emial error:",error);
+    } else{
+      console.log("Email sent!! info:", info);
+    }
+  });
+}
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
@@ -63,6 +113,7 @@ app.get("/trips", async (req, res) => {
 });
 
 app.post('/rezdy-webhook', async (req, res) => {
+  sendEmail();
   try {
     console.log("Webhook hit:", req.body);
   //sækjum það sem við fengum úr webhooknum
