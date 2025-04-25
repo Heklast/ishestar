@@ -10,29 +10,6 @@ const { tripNameMap } = require('./tripNameMap');
 const { fetchProductFromRezdy, fetchAvailFromRezdy } = require("./rezdy.js");
 const nodemailer=require('nodemailer');
 
-nodemailer.createTestAccount().then(testAccount => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass
-    }
-  });
-
-  const message = {
-    from: 'test@example.com',
-    to: 'you@example.com',
-    subject: 'Test',
-    text: 'This is a test email'
-  };
-
-  transporter.sendMail(message, (err, info) => {
-    if (err) return console.error(err);
-    console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
-  });
-});
-
 const EMAIL_PASS= process.env.EMAIL_PASS;
 
 const transporter =nodemailer.createTransport({
