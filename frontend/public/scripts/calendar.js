@@ -152,6 +152,22 @@ document.addEventListener('DOMContentLoaded', async function () {
     calendar.render();
   }
 
+  const params = new URLSearchParams(window.location.search);
+  const keysToStrip = ['_gl', '_gcl_au', '_ga', '_ga_PXYSDSG8YH'];
+
+  let shouldStrip = false;
+  for (const key of keysToStrip) {
+    if (params.has(key)) {
+      params.delete(key);
+      shouldStrip = true;
+    }
+  }
+
+  if (shouldStrip) {
+    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, document.title, newUrl);
+  }
+
   function capitalizeFirst(str) {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
