@@ -112,6 +112,31 @@ app.post('/rezdy-webhook', async (req, res) => {
   res.status(500).send("Webhook handling failed");
 }});
 
+app.post('/orderChange-rezdy-webhook', async (req, res) => {
+  sendEmail();
+  try {
+    console.log("Webhook hit:", req.body);
+
+    const { orderItems } = req.body;
+
+    if (orderItems && Array.isArray(orderItems)) {
+      for (const item of orderItems) {
+        const productCode = item.productCode;
+        console.log("Product code from order:", productCode);
+
+        const availData = await fetchAvailFromRezdy(productCode);
+        const productData = await fetchProductFromRezdy(productCode);
+        const avail = await checkAvailandUpdateDB(availData, productData);
+      }
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Webhook error:", error.message);
+    res.status(500).send("Webhook handling failed");
+  }
+});
+
 async function checkAvailandUpdateDB(availData, productData) {
   const databaseTitles = tripNameMap[productData.name];
 
