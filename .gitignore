@@ -1,1 +1,5 @@
 node_modules/
+.curl.json
+.gagnlegt
+.env
+backend/.env

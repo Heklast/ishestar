@@ -89,14 +89,14 @@ app.get("/trips", async (req, res) => {
   }
 });
 
-app.post('/rezdy-webhook', async (req, res) => {
+app.post('/rezdy-webhook', async (req, res) => { //þessi webhook er ekki live!!
   sendEmail();
   try {
     console.log("Webhook hit:", req.body);
   //sækjum það sem við fengum úr webhooknum
-  const { eventType, productCode } = req.body;
+  const { productCode } = req.body;
 
-  if (eventType === 'ProductUpdated') {
+   { //tengi bara produpd við webhookið þannig þetta þarf ekki að vera
     //sækjum allt data út frá productCode til að nota til að, productdata={sessions úr availability}
     const availData = await fetchAvailFromRezdy(productCode); //sessions
     const productData=await fetchProductFromRezdy(productCode); //products síðan frá rezdy, nafn
@@ -115,12 +115,12 @@ app.post('/rezdy-webhook', async (req, res) => {
 app.post('/orderChange-rezdy-webhook', async (req, res) => {
   sendEmail();
   try {
-    console.log("Webhook hit:", req.body);
+    console.log("New order or delete webhook hit:", req.body);
 
-    const { orderItems } = req.body;
+    const { items } = req.body;
 
-    if (orderItems && Array.isArray(orderItems)) {
-      for (const item of orderItems) {
+    if (items && Array.isArray(items)) {
+      for (const item of items) {
         const productCode = item.productCode;
         console.log("Product code from order:", productCode);
 

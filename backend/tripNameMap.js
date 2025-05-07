@@ -4,6 +4,7 @@ const tripNameMap = {
     "Midsummer Beach & Mountain": "Beach & Mountain",
     "New Frontier": "New Frontier",
     "Hekla Adventure":"Hekla Adventure",
+    //"Hekla Adventure for World on Horseback":"Hekla Adventure", //eigum við að beila á að hafa þessa???
     "Beyond Kjölur": "Beyond Kjölur",
     "Highland Express": "Highland Express",
     "Snaefellsnes - Magical and mysterious": "Magical Snæfellsnes",
