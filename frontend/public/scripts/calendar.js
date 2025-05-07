@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async function () {
    * Litir based on difficulty
    */
   function getColor(level) {
-      const colors = ['#2C5F2D', '#6B3F1F'];
+      const colors = ['#2C5F2D','#8A9A5B']; //'#6B3F1F' bruni
       const difficultyLevels = ['intermediate', 'advanced'];
       for (let i = 0; i < difficultyLevels.length; i++) {
         if (level === difficultyLevels[i]) {
