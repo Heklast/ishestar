@@ -11,7 +11,7 @@ const tripNameMap = {
     "Landmannalaugar Adventure": ["Landmannalaugar Adventure", "Landmannalaugar"],
     "Kirkjufell Adventure": "Kirkjufell Adventure",
     "Midsummer in the Eastfjords": "Midsummer in the Eastfjords",
-    "Löngufjörur beach ride":  "Löngufjörur Beach Ride",
+    "Löngufjörur beach ride ":  "Löngufjörur Beach Ride",
     "Black Sand Beach Ride": "Black Sand Beach Ride",
     "Beach & Lava Ride": "Beach and Lava Ride",
     "Sheep round up - Reyðarvatnsrettir":"Sheep Round-Up",
