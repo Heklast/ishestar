@@ -1,7 +1,7 @@
 //úr rezdy nafni í database nafn
 const tripNameMap = {
     "Chasing Waterfalls - From Summit to Sea": "Chasing Waterfalls",
-    "Midsummer Beach & Mountain": "Beach & Mountain",
+    "Midsummer Beach & Mountain ": "Beach & Mountain",
     "New Frontier": "New Frontier",
     "Hekla Adventure":"Hekla Adventure",
     //"Hekla Adventure for World on Horseback":"Hekla Adventure", //eigum við að beila á að hafa þessa???
