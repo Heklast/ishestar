@@ -37,9 +37,6 @@ html, body {
     font-family:'Poppins';
 }
 
-.fc-daygrid-event {
-  border-color:transparent !important;
-}
 
 header{
     padding:0rem;
