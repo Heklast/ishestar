@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       center: 'title',
     },
     validRange: {
-      start: '2025-06-01',
+      start: '2026-06-01',
       end: '2026-10-01',
     },
     height: 'auto',
