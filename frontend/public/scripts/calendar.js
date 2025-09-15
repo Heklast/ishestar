@@ -22,13 +22,15 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.log(trips);
 
       return trips.map(trip => {
+        const start = toLocalDateOnly(trip.start_date);
+        const end   = addOneDayISO(toLocalDateOnly(trip.end_date));
         const isFull = parseInt(trip.availability) === 0;
         const availabilityClass = isFull ? 'trip-full' : 'trip-available';
         return {
           id: trip.id,
           title: trip.title,
-          start: trip.start_date,
-          end: addOneDay(trip.end_date),
+          start: start,
+          end: end,
           difficulty: trip.difficulty,
           backgroundColor: getColor(trip.difficulty), 
           textColor: '#FFFFFF',
@@ -45,7 +47,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   }
 
-  function isAvailable(availability) {
+  function isAvailable(availability, start) {
+    if (start < new Date().toISOString().split("T")[0]) {
+      return false; // Past trips are not available
+    }
     return parseInt(availability) > 0;
   }
 
@@ -68,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (!selectedCheckbox) return trips;
 
     const selectedFilter = selectedCheckbox.dataset.filter;
-    return selectedFilter === "avail" ? trips.filter(trip => isAvailable(trip.availability)) : trips;
+    return selectedFilter === "avail" ? trips.filter(trip => isAvailable(trip.availability, trip.start)) : trips;
   }
 
   var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -81,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     },
     validRange: {
       start: '2025-06-01',
-      end: '2025-10-01',
+      end: '2026-10-01',
     },
     height: 'auto',
     events: [],
@@ -180,6 +185,22 @@ document.addEventListener('DOMContentLoaded', async function () {
     dagur.setDate(dagur.getDate() + 1);
     return dagur.toISOString().split("T")[0];
   }
+
+  function toLocalDateOnly(x) {
+  const s = String(x);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s); // converts to local time
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function addOneDayISO(dateOnly) {
+  const [y,m,d] = dateOnly.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + 1);
+  return dt.toISOString().slice(0,10);
+}
 
   calendar.render();
   updateCalendar();

@@ -150,6 +150,19 @@ async function checkAvailandUpdateDB(availData, productData) {
   for (const session of availData) {
     const sessionDate = session.startTimeLocal.split(' ')[0];
     const availableSeats = session.seatsAvailable <= 0 ? 0 : 1;
+    const today = new Date().toISOString().split('T')[0];
+
+      if (sessionDate < today) {
+        console.log(`Skipping past session date: ${sessionDate}`);
+        for (const title of titles) {
+          await pool.query(
+          `UPDATE trips SET availability = 0 WHERE title = $1 AND start_date = $2 RETURNING *`,
+          [title, sessionDate]
+          );
+    console.log(`Past trip ${title} (${sessionDate}) marked as availability = 0`);
+  }
+  continue;
+}
 
     for (const title of titles) {
       const result = await pool.query(
