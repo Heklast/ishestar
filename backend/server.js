@@ -35,6 +35,21 @@ function sendEmail(){
     }
   });
 }
+function sendEmailErr(){
+  const mail={
+    from:'heklast@gmail.com',
+    to: 'heklast@gmail.com',
+    subject: 'Nafn fannst ekki!!!',
+    text:'Nafn fannst ekki í the db!!!'
+  };
+  transporter.sendMail(mail, (error,info)=>{
+    if (error){
+      console.error("emial error:",error);
+    } else{
+      console.log("Email sent!! info:", info);
+    }
+  });
+}
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
@@ -141,6 +156,7 @@ async function checkAvailandUpdateDB(availData, productData) {
   const databaseTitles = tripNameMap[productData.name];
 
   if (!databaseTitles) {
+    sendEmailErr();
     console.warn(`No matching DB title for Rezdy name: ${productData.name}`);
     return;
   }
