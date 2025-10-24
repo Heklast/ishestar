@@ -15,6 +15,7 @@ const tripNameMap = {
     "Black Sand Beach Ride": "Black Sand Beach Ride",
     "Beach & Lava Ride": "Beach and Lava Ride",
     "Sheep round up - Reyðarvatnsrettir":"Sheep Round-Up",
+    "Forces of Nature: The Black Sand Trail": "Black Sand Trail",
     //VANTAR SALTVIK OG HORSE ROUNDUPS, 
     // DOUBLE CHECKA Á ÖLLUM SEM ERU EKKIEINS, CPY PASTE ÚR BROWSER REZDY NAFN
 };
