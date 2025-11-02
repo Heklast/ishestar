@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   var calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
+    initialDate: '2026-06-01',
     slotEventOverlap: false,
     fixedWeekCount: false,
     headerToolbar: {
@@ -85,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       center: 'title',
     },
     validRange: {
-      start: '2026-06-01',
+      start: '2026-05-01',
       end: '2026-10-01',
     },
     height: 'auto',
