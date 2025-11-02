@@ -18,6 +18,11 @@ const tripNameMap = {
     "Forces of Nature: The Black Sand Trail": "Black Sand Trail",
     "Trail of Legends": "Trail of Legends",
     "Southern Comfort": "Southern Comfort",
+    "Spirit of Hekla": "Spirit of Hekla",
+    "Into the Far East": "Into the Far East",
+    "Forces of Nature: The Black Sand Trail": "Black Sand Trails",
+    "Vopnafjörður": "Ride to Vopnafjörður",
+    "Thorsmörk and Beyond": "Thorsmörk and Beyond",
     //VANTAR SALTVIK OG HORSE ROUNDUPS, 
     // DOUBLE CHECKA Á ÖLLUM SEM ERU EKKIEINS, CPY PASTE ÚR BROWSER REZDY NAFN
 };
