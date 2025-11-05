@@ -9,6 +9,7 @@ const tripNameMap = {
     "Highland Express": "Highland Express",
     "Snaefellsnes - Magical and mysterious": "Magical Snæfellsnes",
     "Landmannalaugar Adventure": ["Landmannalaugar Adventure", "Landmannalaugar"],
+    "Landmannalaugar Adventure for World on Horseback": ["Landmannalaugar Adventure", "Landmannalaugar"],
     "Kirkjufell Adventure": "Kirkjufell Adventure",
     "Midsummer in the Eastfjords": "Midsummer in the Eastfjords",
     "Löngufjörur beach ride ":  "Löngufjörur Beach Ride",
