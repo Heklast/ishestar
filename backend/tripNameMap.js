@@ -26,6 +26,7 @@ const tripNameMap = {
     "Thorsmörk and Beyond": "Thorsmörk and Beyond",
     "Around The Glacier ": "Around the Glacier",
     "Southern Highland Adventure ": "Southern Highland",
+    "Under a Darkened Sun": "Under A Darkened Sun" 
     //VANTAR SALTVIK OG HORSE ROUNDUPS, 
     // DOUBLE CHECKA Á ÖLLUM SEM ERU EKKIEINS, CPY PASTE ÚR BROWSER REZDY NAFN
 };
