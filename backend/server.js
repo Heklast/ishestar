@@ -306,7 +306,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const yearStart = `${SYNC_YEAR}-01-01`;
   const from = today > yearStart ? today : yearStart;
   const to = `${SYNC_YEAR}-12-31`;
-  const added = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
+  const added = [], updated = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
 
   const products = (await fetchAllProductsFromRezdy())
     .filter(product => !IGNORED_PRODUCT_CODES.includes(product.productCode));
@@ -375,7 +375,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       const trip = template.rows[0];
 
       const existing = await client.query(
-        `SELECT id, title, added_by_sync, to_char(start_date, 'YYYY-MM-DD') AS start
+        `SELECT id, title, availability, added_by_sync, to_char(start_date, 'YYYY-MM-DD') AS start
          FROM trips WHERE code = $1 AND start_date BETWEEN $2 AND $3`,
         [code, from, to]
       );
@@ -393,7 +393,16 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       }
 
       for (const row of existing.rows) {
-        if (sessionsByDate.has(row.start)) continue;
+        const session = sessionsByDate.get(row.start);
+        if (session) {
+          //uppfærum availability út frá sætum í rezdy
+          const availability = session.seatsAvailable <= 0 ? 0 : 1;
+          if (row.availability !== availability) {
+            updated.push(`${row.title} ${row.start}: ${row.availability} -> ${availability}`);
+            await client.query("UPDATE trips SET availability = $1 WHERE id = $2", [availability, row.id]);
+          }
+          continue;
+        }
         if (!row.added_by_sync) {
           notInRezdy.push(`${row.title} ${row.start}`);
           continue;
@@ -420,6 +429,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
 
   const report = [
     `Bætt við (${added.length}):`, ...added, '',
+    `Availability uppfært (${updated.length}):`, ...updated, '',
     `Eytt (${deleted.length}):`, ...deleted, '',
     `Ekki í Rezdy en sett inn handvirkt, ekki eytt (${notInRezdy.length}):`, ...notInRezdy, '',
     `Fengu code (${coded.length}):`, ...coded, '',
