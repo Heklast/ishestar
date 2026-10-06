@@ -127,10 +127,61 @@ app.post('/rezdy-webhook', async (req, res) => { //þessi webhook er ekki live!!
   res.status(500).send("Webhook handling failed");
 }});
 
-app.post('/orderChange-rezdy-webhook', async (req, res) => {
-  sendEmail();
+app.post("/orderChange-rezdy-webhook", async (req, res) => {
   try {
     console.log("New order or delete webhook hit:", req.body);
+
+    const { items } = req.body;
+
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: "items must be an array" });
+    }
+
+    // If sendEmail is async, await it and keep it inside try so errors are caught.
+    await sendEmail();
+
+    for (const item of items) {
+      const productCode = item?.productCode;
+      console.log("Product code from order:", productCode);
+
+      if (!productCode) {
+        console.warn("Skipping item with missing productCode:", item);
+        continue;
+      }
+
+      try {
+        const availData = await fetchAvailFromRezdy(productCode);
+        const productData = await fetchProductFromRezdy(productCode);
+        await checkAvailandUpdateDB(availData, productData);
+      } catch (err) {
+        console.error(`Failed processing productCode=${productCode}`);
+        // Log rich info for Axios/fetch-style errors
+        console.error("err:", err);
+        console.error("message:", err?.message);
+        console.error("stack:", err?.stack);
+        if (err?.response) {
+          console.error("status:", err.response.status);
+          console.error("data:", err.response.data);
+          console.error("headers:", err.response.headers);
+        }
+        // Re-throw if you want webhook to fail when any item fails:
+        throw err;
+        // Or: continue;  // if you prefer partial success
+      }
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error("Webhook error (top-level):", error);
+    return res.status(500).send("Webhook handling failed");
+  }
+});
+
+
+app.post('/new-product', async (req, res) => {
+  sendEmail();
+  try {
+    console.log("New products:", req.body);
 
     const { items } = req.body;
 
@@ -151,6 +202,9 @@ app.post('/orderChange-rezdy-webhook', async (req, res) => {
     res.status(500).send("Webhook handling failed");
   }
 });
+
+
+
 
 async function checkAvailandUpdateDB(availData, productData) {
   const databaseTitles = tripNameMap[productData.name];
@@ -207,6 +261,111 @@ async function checkAvailandUpdateDB(availData, productData) {
     //[availableSeats, title, start_date]
   //);
 //}
+
+
+
+
+
+
+
+//ÉG ER AÐ GERA ÞETTA!!!! NUNA, ÞARF AÐ KLÁRA!!!!!
+async function checkDeletedOrNewSession(availData, productData) {
+  const PRODUCT_CODES = [
+  'PKNJXY',
+  'PRAMZ8',
+  'PSQ1SG',
+  'PLE2E0',
+  'PMSY1Z',
+  'PNXN8A',
+  'PWMNK4',
+  'PVT4VW',
+  'PGBXS8',
+  'PUSLE4',
+  'PMTR1T',
+  'PGAWUZ',
+  'PTMWEK',
+  'PHWNJR',
+  'PBGSHQ',
+  'PF0PB4',
+  'P0ASPV',
+  'P3MTF0',
+  'P1NKTX',
+  'PQSAEX',
+  'PAEGTC',
+  'PWMS0A',
+  'PSV5QQ',
+  'PMFDST',
+  'P1QLKB',
+  'PHRCTN',
+  'P0T0R7'
+];
+
+const result = await pool.query(
+      "SELECT id, title, start_date, end_date, link, riding_days, difficulty, availability FROM trips"
+    );
+res.json(result.rows);
+for (const productCode of PRODUCT_CODES) {
+
+   const availData = await fetchAvailFromRezdy(productCode);
+    const productData = await fetchProductFromRezdy(productCode);
+  const databaseTitles = tripNameMap[productData.name];
+  for (const session of availData){
+    for(const result of result.rows){
+      if(session.startTimeLocal.split(' ')[0]==result.start_date){
+        console.log(`The session ${session.startTimeLocal.split(' ')[0]} is already in the database`);
+        session.existsInDB=true;
+      
+      }   }
+}}
+
+  if (!databaseTitles) {
+    sendEmailErr();
+    console.warn(`No matching DB title for Rezdy name: ${productData.name}`);
+    return;
+  }
+
+  const titles = Array.isArray(databaseTitles) ? databaseTitles : [databaseTitles];
+
+  for (const session of availData) {
+    const sessionDate = session.startTimeLocal.split(' ')[0];
+    const availableSeats = session.seatsAvailable <= 0 ? 0 : 1;
+    const today = new Date().toISOString().split('T')[0];
+
+      if (sessionDate < today) {
+        console.log(`Skipping past session date: ${sessionDate}`);
+        for (const title of titles) {
+          await pool.query(
+          `UPDATE trips SET availability = 0 WHERE title = $1 AND start_date = $2 RETURNING *`,
+          [title, sessionDate]
+          );
+    console.log(`Past trip ${title} (${sessionDate}) marked as availability = 0`);
+  }
+  continue;
+}
+
+    for (const title of titles) {
+      const result = await pool.query(
+        `UPDATE trips SET availability = $1 WHERE title = $2 AND start_date = $3 RETURNING *`,
+        [availableSeats, title, sessionDate]
+      );
+
+      if (result.rowCount > 0) {
+        console.log(`Updated trip: ${title} on ${sessionDate} to availability = ${availableSeats}`);
+      } else {
+        console.warn(`No DB match for ${title} on ${sessionDate}`);
+      }
+    }
+  }
+
+  console.log("Database updated");
+}
+
+
+
+
+
+
+
 
 
 

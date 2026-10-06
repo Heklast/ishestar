@@ -29,3 +29,24 @@ gamla í calendar.js
           if (!chunk.innerText.trim() && titleFits) {
             chunk.innerText = info.event.title;
           }});
+
+
+
+Gerði þetta 16.jan
+
+Taka út úr railway
+hekla adv: 6 ágúst
+Landmannalaugar: 24 júlí
+spirit of hekla: 19. júní, 26 júní
+saltvík: 12.júlí
+
+bæta við:
+sheep round up: 15.9
+Snæfellsnes: 8 júlí
+solar eclipse: 8.ág
+southern comfort: 21 júlí
+spirit of the highlands: 3.júlí HVAÐ ER ÞETTA
+the dark side of the sun: 8 ágHMM ÞESSI HEITIR SÍÐAN SOLAR ECLIPSE INN Í??
+15 apríl: saltvíkHERE IS 2024 IN THE TEXT
+horse round up: 9 September,22 September,30 SeptemberHÉR ER 2025 Í TEXTA
+I PUT ADVANCED HERE AND 5 NIGHTS
