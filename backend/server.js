@@ -316,10 +316,12 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const rezdyNames = {};
   for (const product of products) rezdyNames[product.productCode] = product.name;
 
+  //utan transaction: ALTER TABLE læsir allri töflunni þar til transaction klárast, og þá getur síðan ekki lesið trips
+  await pool.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS added_by_sync BOOLEAN NOT NULL DEFAULT false");
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS added_by_sync BOOLEAN NOT NULL DEFAULT false");
 
     //ferðir sem voru settar inn handvirkt fá code út frá tripNameMap
     //bara ef nákvæmlega eitt rezdy product passar við titilinn
