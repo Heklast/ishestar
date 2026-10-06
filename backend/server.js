@@ -284,6 +284,9 @@ async function checkAvailandUpdateDB(availData, productData) {
 
 
 
+//árið sem sync sér um, breyta þegar næsta ár opnar á síðunni
+const SYNC_YEAR = 2027;
+
 //dagsferðir í rezdy sem eiga ekki heima á dagatalinu
 const IGNORED_PRODUCT_CODES = [
   'P7PAZG', //Custom Countryside Ride
@@ -297,7 +300,11 @@ const IGNORED_PRODUCT_CODES = [
 //nýjar sessions eru settar inn og sessions sem var eytt í rezdy eru teknar út
 //allt er gert í einni transaction, dryRun=true gerir rollback í lokin svo engu er breytt
 async function syncTripsWithRezdy({ dryRun = false } = {}) {
+  //bara ferðir á SYNC_YEAR, og ekki ferðir sem eru búnar
   const today = new Date().toISOString().split('T')[0];
+  const yearStart = `${SYNC_YEAR}-01-01`;
+  const from = today > yearStart ? today : yearStart;
+  const to = `${SYNC_YEAR}-12-31`;
   const added = [], deleted = [], coded = [], newProducts = [], errors = [];
 
   const products = (await fetchAllProductsFromRezdy())
@@ -338,7 +345,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       if (IGNORED_PRODUCT_CODES.includes(code)) continue;
       let sessions;
       try {
-        sessions = await fetchAvailFromRezdy(code);
+        sessions = await fetchAvailFromRezdy(code, from, to);
       } catch (err) {
         console.error(`Sync failed for ${code}:`, err.message);
         errors.push(`${code}: ${err.message}`);
@@ -347,7 +354,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       const sessionsByDate = new Map();
       for (const session of sessions) {
         const date = session.startTimeLocal.split(' ')[0];
-        if (date >= today) sessionsByDate.set(date, session);
+        if (date >= from && date <= to) sessionsByDate.set(date, session);
       }
 
       //nýjasta ferðin með þessum code, notum link, riding_days og difficulty úr henni
@@ -367,8 +374,8 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
 
       const existing = await client.query(
         `SELECT id, title, to_char(start_date, 'YYYY-MM-DD') AS start
-         FROM trips WHERE code = $1 AND start_date >= $2`,
-        [code, today]
+         FROM trips WHERE code = $1 AND start_date BETWEEN $2 AND $3`,
+        [code, from, to]
       );
       const existingDates = new Set(existing.rows.map(r => r.start));
 
@@ -400,7 +407,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
 
   //ferðir sem eru enn án code, sync sér þær ekki
   const uncoded = await pool.query(
-    "SELECT DISTINCT title FROM trips WHERE code IS NULL AND start_date >= $1 ORDER BY title", [today]);
+    "SELECT DISTINCT title FROM trips WHERE code IS NULL AND start_date BETWEEN $1 AND $2 ORDER BY title", [from, to]);
   //í dry run er code ekki vistað, svo þær sem fengu code eru taldar hér líka
   const missingCode = uncoded.rows.map(r => r.title)
     .filter(title => dryRun ? !coded.some(c => c.startsWith(`${title} -> `)) : true);
@@ -413,7 +420,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
     `Framtíðarferðir án code, þarf að bæta í tripNameMap (${missingCode.length}):`, ...missingCode, '',
     `Villur (${errors.length}):`, ...errors,
   ].join('\n');
-  console.log(`${dryRun ? '[DRY RUN] ' : ''}Rezdy sync búið\n${report}`);
+  console.log(`${dryRun ? '[DRY RUN] ' : ''}Rezdy sync búið (${from} - ${to})\n${report}`);
 
   if (!dryRun && (added.length || deleted.length || newProducts.length || errors.length)) {
     sendReport('Rezdy sync', report);
