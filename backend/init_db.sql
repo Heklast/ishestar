@@ -8,7 +8,9 @@ CREATE TABLE trips (
   link VARCHAR(500),
   riding_days INTEGER,
   difficulty VARCHAR(255) NOT NULL,
-  availability INTEGER 
+  availability INTEGER,
+  code VARCHAR(20),
+  added_by_sync BOOLEAN NOT NULL DEFAULT false
 );
 
 DELETE from trips;

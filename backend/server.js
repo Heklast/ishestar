@@ -298,6 +298,7 @@ const IGNORED_PRODUCT_CODES = [
 
 //ber saman sessions í rezdy við trips í databaseinu (keyrt á 24 tíma fresti)
 //nýjar sessions eru settar inn og sessions sem var eytt í rezdy eru teknar út
+//bara ferðir sem sync bætti sjálft við (added_by_sync) eru teknar út, aldrei ferðir sem voru settar inn handvirkt
 //allt er gert í einni transaction, dryRun=true gerir rollback í lokin svo engu er breytt
 async function syncTripsWithRezdy({ dryRun = false } = {}) {
   //bara ferðir á SYNC_YEAR, og ekki ferðir sem eru búnar
@@ -305,7 +306,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const yearStart = `${SYNC_YEAR}-01-01`;
   const from = today > yearStart ? today : yearStart;
   const to = `${SYNC_YEAR}-12-31`;
-  const added = [], deleted = [], coded = [], newProducts = [], errors = [];
+  const added = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
 
   const products = (await fetchAllProductsFromRezdy())
     .filter(product => !IGNORED_PRODUCT_CODES.includes(product.productCode));
@@ -318,6 +319,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    await client.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS added_by_sync BOOLEAN NOT NULL DEFAULT false");
 
     //ferðir sem voru settar inn handvirkt fá code út frá tripNameMap
     //bara ef nákvæmlega eitt rezdy product passar við titilinn
@@ -373,7 +375,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       const trip = template.rows[0];
 
       const existing = await client.query(
-        `SELECT id, title, to_char(start_date, 'YYYY-MM-DD') AS start
+        `SELECT id, title, added_by_sync, to_char(start_date, 'YYYY-MM-DD') AS start
          FROM trips WHERE code = $1 AND start_date BETWEEN $2 AND $3`,
         [code, from, to]
       );
@@ -384,14 +386,18 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
         const availability = session.seatsAvailable <= 0 ? 0 : 1;
         added.push(`${trip.title} ${date}`);
         await client.query(
-          `INSERT INTO trips (title, start_date, end_date, link, riding_days, difficulty, availability, code)
-           VALUES ($1, $2::date, $2::date + $3::int, $4, $5, $6, $7, $8)`,
+          `INSERT INTO trips (title, start_date, end_date, link, riding_days, difficulty, availability, code, added_by_sync)
+           VALUES ($1, $2::date, $2::date + $3::int, $4, $5, $6, $7, $8, true)`,
           [trip.title, date, trip.length, trip.link, trip.riding_days, trip.difficulty, availability, code]
         );
       }
 
       for (const row of existing.rows) {
         if (sessionsByDate.has(row.start)) continue;
+        if (!row.added_by_sync) {
+          notInRezdy.push(`${row.title} ${row.start}`);
+          continue;
+        }
         deleted.push(`${row.title} ${row.start}`);
         await client.query("DELETE FROM trips WHERE id = $1", [row.id]);
       }
@@ -415,6 +421,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const report = [
     `Bætt við (${added.length}):`, ...added, '',
     `Eytt (${deleted.length}):`, ...deleted, '',
+    `Ekki í Rezdy en sett inn handvirkt, ekki eytt (${notInRezdy.length}):`, ...notInRezdy, '',
     `Fengu code (${coded.length}):`, ...coded, '',
     `Ný products í Rezdy, þarf að setja fyrstu ferð inn handvirkt (${newProducts.length}):`, ...newProducts, '',
     `Framtíðarferðir án code, þarf að bæta í tripNameMap (${missingCode.length}):`, ...missingCode, '',
