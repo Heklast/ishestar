@@ -7,7 +7,7 @@ const cors = require("cors");
 const fs = require("fs");
 const getExcelData = require("./excel.js");
 const { tripNameMap } = require('./tripNameMap');
-const { fetchProductFromRezdy, fetchAvailFromRezdy } = require("./rezdy.js");
+const { fetchProductFromRezdy, fetchAvailFromRezdy, fetchAllProductsFromRezdy } = require("./rezdy.js");
 const nodemailer=require('nodemailer');
 
 const EMAIL_PASS= process.env.EMAIL_PASS;
@@ -41,6 +41,22 @@ function sendEmailErr(){
     to: 'heklast@gmail.com',
     subject: 'Nafn fannst ekki!!!',
     text:'Nafn fannst ekki í the db!!!'
+  };
+  transporter.sendMail(mail, (error,info)=>{
+    if (error){
+      console.error("emial error:",error);
+    } else{
+      console.log("Email sent!! info:", info);
+    }
+  });
+}
+
+function sendReport(subject, text){
+  const mail={
+    from:'heklast@gmail.com',
+    to: 'heklast@gmail.com',
+    subject,
+    text
   };
   transporter.sendMail(mail, (error,info)=>{
     if (error){
@@ -268,105 +284,166 @@ async function checkAvailandUpdateDB(availData, productData) {
 
 
 
-//ÉG ER AÐ GERA ÞETTA!!!! NUNA, ÞARF AÐ KLÁRA!!!!!
-async function checkDeletedOrNewSession(availData, productData) {
-  const PRODUCT_CODES = [
-  'PKNJXY',
-  'PRAMZ8',
-  'PSQ1SG',
-  'PLE2E0',
-  'PMSY1Z',
-  'PNXN8A',
-  'PWMNK4',
-  'PVT4VW',
-  'PGBXS8',
-  'PUSLE4',
-  'PMTR1T',
-  'PGAWUZ',
-  'PTMWEK',
-  'PHWNJR',
-  'PBGSHQ',
-  'PF0PB4',
-  'P0ASPV',
-  'P3MTF0',
-  'P1NKTX',
-  'PQSAEX',
-  'PAEGTC',
-  'PWMS0A',
-  'PSV5QQ',
-  'PMFDST',
-  'P1QLKB',
-  'PHRCTN',
-  'P0T0R7'
+//árið sem sync sér um, breyta þegar næsta ár opnar á síðunni
+const SYNC_YEAR = 2027;
+
+//dagsferðir í rezdy sem eiga ekki heima á dagatalinu
+const IGNORED_PRODUCT_CODES = [
+  'P7PAZG', //Custom Countryside Ride
+  'P4TLFJ', //Minnivellir
+  'PVCHXR', //Volcano Ride Custom
+  'PT9JSS', //Volcano Ride Special
+  'PMCYWG', //Winter riding
 ];
 
-const result = await pool.query(
-      "SELECT id, title, start_date, end_date, link, riding_days, difficulty, availability FROM trips"
-    );
-res.json(result.rows);
-for (const productCode of PRODUCT_CODES) {
+//ber saman sessions í rezdy við trips í databaseinu (keyrt á 24 tíma fresti)
+//nýjar sessions eru settar inn og sessions sem var eytt í rezdy eru teknar út
+//bara ferðir sem sync bætti sjálft við (added_by_sync) eru teknar út, aldrei ferðir sem voru settar inn handvirkt
+//allt er gert í einni transaction, dryRun=true gerir rollback í lokin svo engu er breytt
+async function syncTripsWithRezdy({ dryRun = false } = {}) {
+  //bara ferðir á SYNC_YEAR, og ekki ferðir sem eru búnar
+  const today = new Date().toISOString().split('T')[0];
+  const yearStart = `${SYNC_YEAR}-01-01`;
+  const from = today > yearStart ? today : yearStart;
+  const to = `${SYNC_YEAR}-12-31`;
+  const added = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
 
-   const availData = await fetchAvailFromRezdy(productCode);
-    const productData = await fetchProductFromRezdy(productCode);
-  const databaseTitles = tripNameMap[productData.name];
-  for (const session of availData){
-    for(const result of result.rows){
-      if(session.startTimeLocal.split(' ')[0]==result.start_date){
-        console.log(`The session ${session.startTimeLocal.split(' ')[0]} is already in the database`);
-        session.existsInDB=true;
-      
-      }   }
-}}
-
-  if (!databaseTitles) {
-    sendEmailErr();
-    console.warn(`No matching DB title for Rezdy name: ${productData.name}`);
-    return;
+  const products = (await fetchAllProductsFromRezdy())
+    .filter(product => !IGNORED_PRODUCT_CODES.includes(product.productCode));
+  if (products.length === 0) {
+    throw new Error("Rezdy skilaði engum products, hætti við svo engu sé eytt");
   }
+  const rezdyNames = {};
+  for (const product of products) rezdyNames[product.productCode] = product.name;
 
-  const titles = Array.isArray(databaseTitles) ? databaseTitles : [databaseTitles];
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS added_by_sync BOOLEAN NOT NULL DEFAULT false");
 
-  for (const session of availData) {
-    const sessionDate = session.startTimeLocal.split(' ')[0];
-    const availableSeats = session.seatsAvailable <= 0 ? 0 : 1;
-    const today = new Date().toISOString().split('T')[0];
-
-      if (sessionDate < today) {
-        console.log(`Skipping past session date: ${sessionDate}`);
-        for (const title of titles) {
-          await pool.query(
-          `UPDATE trips SET availability = 0 WHERE title = $1 AND start_date = $2 RETURNING *`,
-          [title, sessionDate]
-          );
-    console.log(`Past trip ${title} (${sessionDate}) marked as availability = 0`);
-  }
-  continue;
-}
-
-    for (const title of titles) {
-      const result = await pool.query(
-        `UPDATE trips SET availability = $1 WHERE title = $2 AND start_date = $3 RETURNING *`,
-        [availableSeats, title, sessionDate]
-      );
-
-      if (result.rowCount > 0) {
-        console.log(`Updated trip: ${title} on ${sessionDate} to availability = ${availableSeats}`);
-      } else {
-        console.warn(`No DB match for ${title} on ${sessionDate}`);
+    //ferðir sem voru settar inn handvirkt fá code út frá tripNameMap
+    //bara ef nákvæmlega eitt rezdy product passar við titilinn
+    const codesByTitle = {};
+    for (const product of products) {
+      const titles = tripNameMap[product.name];
+      if (!titles) continue;
+      for (const title of Array.isArray(titles) ? titles : [titles]) {
+        (codesByTitle[title] ||= new Set()).add(product.productCode);
       }
     }
+    for (const [title, codeSet] of Object.entries(codesByTitle)) {
+      if (codeSet.size !== 1) continue;
+      const [code] = codeSet;
+      const result = await client.query(
+        "UPDATE trips SET code = $1 WHERE code IS NULL AND title = $2", [code, title]);
+      if (result.rowCount > 0) coded.push(`${title} -> ${code} (${result.rowCount})`);
+    }
+
+    //líka codes sem eru í databaseinu en ekki lengur í rezdy (product eytt)
+    const dbCodes = await client.query("SELECT DISTINCT code FROM trips WHERE code IS NOT NULL");
+    const codes = new Set([...Object.keys(rezdyNames), ...dbCodes.rows.map(r => r.code)]);
+
+    for (const code of codes) {
+      if (IGNORED_PRODUCT_CODES.includes(code)) continue;
+      let sessions;
+      try {
+        sessions = await fetchAvailFromRezdy(code, from, to);
+      } catch (err) {
+        console.error(`Sync failed for ${code}:`, err.message);
+        errors.push(`${code}: ${err.message}`);
+        continue;
+      }
+      const sessionsByDate = new Map();
+      for (const session of sessions) {
+        const date = session.startTimeLocal.split(' ')[0];
+        if (date >= from && date <= to) sessionsByDate.set(date, session);
+      }
+
+      //nýjasta ferðin með þessum code, notum link, riding_days og difficulty úr henni
+      const template = await client.query(
+        `SELECT title, link, riding_days, difficulty, (end_date - start_date) AS length
+         FROM trips WHERE code = $1 ORDER BY start_date DESC LIMIT 1`,
+        [code]
+      );
+      if (template.rowCount === 0) {
+        //nýtt product, vitum ekki link/difficulty svo þarf að setja fyrstu ferðina inn handvirkt
+        if (sessionsByDate.size > 0) {
+          newProducts.push(`${rezdyNames[code] || '?'} (${code}): ${[...sessionsByDate.keys()].join(', ')}`);
+        }
+        continue;
+      }
+      const trip = template.rows[0];
+
+      const existing = await client.query(
+        `SELECT id, title, added_by_sync, to_char(start_date, 'YYYY-MM-DD') AS start
+         FROM trips WHERE code = $1 AND start_date BETWEEN $2 AND $3`,
+        [code, from, to]
+      );
+      const existingDates = new Set(existing.rows.map(r => r.start));
+
+      for (const [date, session] of sessionsByDate) {
+        if (existingDates.has(date)) continue;
+        const availability = session.seatsAvailable <= 0 ? 0 : 1;
+        added.push(`${trip.title} ${date}`);
+        await client.query(
+          `INSERT INTO trips (title, start_date, end_date, link, riding_days, difficulty, availability, code, added_by_sync)
+           VALUES ($1, $2::date, $2::date + $3::int, $4, $5, $6, $7, $8, true)`,
+          [trip.title, date, trip.length, trip.link, trip.riding_days, trip.difficulty, availability, code]
+        );
+      }
+
+      for (const row of existing.rows) {
+        if (sessionsByDate.has(row.start)) continue;
+        if (!row.added_by_sync) {
+          notInRezdy.push(`${row.title} ${row.start}`);
+          continue;
+        }
+        deleted.push(`${row.title} ${row.start}`);
+        await client.query("DELETE FROM trips WHERE id = $1", [row.id]);
+      }
+    }
+
+    await client.query(dryRun ? 'ROLLBACK' : 'COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
   }
 
-  console.log("Database updated");
+  //ferðir sem eru enn án code, sync sér þær ekki
+  const uncoded = await pool.query(
+    "SELECT DISTINCT title FROM trips WHERE code IS NULL AND start_date BETWEEN $1 AND $2 ORDER BY title", [from, to]);
+  //í dry run er code ekki vistað, svo þær sem fengu code eru taldar hér líka
+  const missingCode = uncoded.rows.map(r => r.title)
+    .filter(title => dryRun ? !coded.some(c => c.startsWith(`${title} -> `)) : true);
+
+  const report = [
+    `Bætt við (${added.length}):`, ...added, '',
+    `Eytt (${deleted.length}):`, ...deleted, '',
+    `Ekki í Rezdy en sett inn handvirkt, ekki eytt (${notInRezdy.length}):`, ...notInRezdy, '',
+    `Fengu code (${coded.length}):`, ...coded, '',
+    `Ný products í Rezdy, þarf að setja fyrstu ferð inn handvirkt (${newProducts.length}):`, ...newProducts, '',
+    `Framtíðarferðir án code, þarf að bæta í tripNameMap (${missingCode.length}):`, ...missingCode, '',
+    `Villur (${errors.length}):`, ...errors,
+  ].join('\n');
+  console.log(`${dryRun ? '[DRY RUN] ' : ''}Rezdy sync búið (${from} - ${to})\n${report}`);
+
+  if (!dryRun && (added.length || deleted.length || newProducts.length || errors.length)) {
+    sendReport('Rezdy sync', report);
+  }
 }
 
+const SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
-
-
-
-
-
-
+async function runRezdySync() {
+  try {
+    await syncTripsWithRezdy();
+  } catch (err) {
+    console.error("Rezdy sync failed:", err);
+    sendReport('Rezdy sync failed!!!', String(err?.stack || err));
+  }
+}
 
 
 async function updateAvailability() {
@@ -422,7 +499,20 @@ app.get("/update-availability", async (req, res) => {
 });
 
 
-//Starta server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT} or Render URL`);
-});
+//node server.js --sync-dry-run: sýnir hvað sync myndi gera án þess að breyta databaseinu
+if (process.argv.includes('--sync-dry-run')) {
+  syncTripsWithRezdy({ dryRun: true })
+    .catch(err => console.error("Dry run failed:", err))
+    .finally(() => pool.end());
+} else {
+  //Starta server
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT} or Render URL`);
+
+    //bara á railway, svo að keyra serverinn locally breyti ekki databaseinu
+    if (process.env.RAILWAY_ENVIRONMENT_NAME) {
+      runRezdySync();
+      setInterval(runRezdySync, SYNC_INTERVAL_MS);
+    }
+  });
+}
