@@ -521,8 +521,8 @@ if (process.argv.includes('--sync-dry-run')) {
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT} or Render URL`);
 
-    //bara á railway, svo að keyra serverinn locally breyti ekki databaseinu
-    if (process.env.RAILWAY_ENVIRONMENT_NAME) {
+    //bara ef RUN_REZDY_SYNC=true er sett á hýsingunni, svo að keyra serverinn locally breyti ekki databaseinu
+    if (process.env.RUN_REZDY_SYNC === 'true') {
       runRezdySync();
       setInterval(runRezdySync, SYNC_INTERVAL_MS);
     }
