@@ -296,6 +296,11 @@ const IGNORED_PRODUCT_CODES = [
   'PMCYWG', //Winter riding
 ];
 
+//dagsetningin sem session endar á í rezdy, null ef hún kemur ekki
+function sessionEndDate(session) {
+  return session.endTimeLocal ? session.endTimeLocal.split(' ')[0] : null;
+}
+
 //ber saman sessions í rezdy við trips í databaseinu (keyrt á 24 tíma fresti)
 //nýjar sessions eru settar inn og sessions sem var eytt í rezdy eru teknar út
 //bara ferðir sem sync bætti sjálft við (added_by_sync) eru teknar út, aldrei ferðir sem voru settar inn handvirkt
@@ -306,7 +311,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const yearStart = `${SYNC_YEAR}-01-01`;
   const from = today > yearStart ? today : yearStart;
   const to = `${SYNC_YEAR}-12-31`;
-  const added = [], updated = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
+  const added = [], updated = [], endDatesFixed = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
 
   const products = (await fetchAllProductsFromRezdy())
     .filter(product => !IGNORED_PRODUCT_CODES.includes(product.productCode));
@@ -362,6 +367,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       }
 
       //nýjasta ferðin með þessum code, notum link, riding_days og difficulty úr henni
+      //(og lengdina ef rezdy sendir ekki endTimeLocal)
       const template = await client.query(
         `SELECT title, link, riding_days, difficulty, (end_date - start_date) AS length
          FROM trips WHERE code = $1 ORDER BY start_date DESC LIMIT 1`,
@@ -377,7 +383,8 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       const trip = template.rows[0];
 
       const existing = await client.query(
-        `SELECT id, title, availability, added_by_sync, to_char(start_date, 'YYYY-MM-DD') AS start
+        `SELECT id, title, availability, added_by_sync, to_char(start_date, 'YYYY-MM-DD') AS start,
+                to_char(end_date, 'YYYY-MM-DD') AS end
          FROM trips WHERE code = $1 AND start_date BETWEEN $2 AND $3`,
         [code, from, to]
       );
@@ -387,10 +394,11 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
         if (existingDates.has(date)) continue;
         const availability = session.seatsAvailable <= 0 ? 0 : 1;
         added.push(`${trip.title} ${date}`);
+        //end_date úr rezdy, annars sama lengd og template ferðin
         await client.query(
           `INSERT INTO trips (title, start_date, end_date, link, riding_days, difficulty, availability, code, added_by_sync)
-           VALUES ($1, $2::date, $2::date + $3::int, $4, $5, $6, $7, $8, true)`,
-          [trip.title, date, trip.length, trip.link, trip.riding_days, trip.difficulty, availability, code]
+           VALUES ($1, $2::date, COALESCE($9::date, $2::date + $3::int), $4, $5, $6, $7, $8, true)`,
+          [trip.title, date, trip.length, trip.link, trip.riding_days, trip.difficulty, availability, code, sessionEndDate(session)]
         );
       }
 
@@ -402,6 +410,12 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
           if (row.availability !== availability) {
             updated.push(`${row.title} ${row.start}: ${row.availability} -> ${availability}`);
             await client.query("UPDATE trips SET availability = $1 WHERE id = $2", [availability, row.id]);
+          }
+          //lögum end_date ef hann passar ekki við rezdy, líka á ferðum sem voru settar inn handvirkt
+          const endDate = sessionEndDate(session);
+          if (endDate && row.end !== endDate) {
+            endDatesFixed.push(`${row.title} ${row.start}: ${row.end} -> ${endDate}`);
+            await client.query("UPDATE trips SET end_date = $1 WHERE id = $2", [endDate, row.id]);
           }
           continue;
         }
@@ -432,6 +446,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const report = [
     `Bætt við (${added.length}):`, ...added, '',
     `Availability uppfært (${updated.length}):`, ...updated, '',
+    `End date lagaður (${endDatesFixed.length}):`, ...endDatesFixed, '',
     `Eytt (${deleted.length}):`, ...deleted, '',
     `Ekki í Rezdy en sett inn handvirkt, ekki eytt (${notInRezdy.length}):`, ...notInRezdy, '',
     `Fengu code (${coded.length}):`, ...coded, '',
@@ -441,7 +456,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   ].join('\n');
   console.log(`${dryRun ? '[DRY RUN] ' : ''}Rezdy sync búið (${from} - ${to})\n${report}`);
 
-  if (!dryRun && (added.length || deleted.length || newProducts.length || errors.length)) {
+  if (!dryRun && (added.length || endDatesFixed.length || deleted.length || newProducts.length || errors.length)) {
     sendReport('Rezdy sync', report);
   }
 }
