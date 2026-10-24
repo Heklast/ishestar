@@ -8,6 +8,7 @@ const fs = require("fs");
 const getExcelData = require("./excel.js");
 const { tripNameMap } = require('./tripNameMap');
 const { fetchProductFromRezdy, fetchAvailFromRezdy, fetchAllProductsFromRezdy } = require("./rezdy.js");
+const { fetchExcursionSlugs } = require("./website.js");
 const nodemailer=require('nodemailer');
 
 const EMAIL_PASS= process.env.EMAIL_PASS;
@@ -110,7 +111,7 @@ app.get("/trips", async (req, res) => {
    // await updateAvailability(); //þessi lætur taka smá tíma, 
     // væri hraðara að sleppa og gera frekar auto með /upd...
     const result = await pool.query(
-      "SELECT id, title, start_date, end_date, link, riding_days, difficulty, availability FROM trips"
+      "SELECT id, title, start_date, end_date, link, riding_days, difficulty, availability, trip_type FROM trips"
     ); //er líka með description núna í databse en hættum við að nota
     res.json(result.rows);
     //console.log(result);
@@ -223,44 +224,33 @@ app.post('/new-product', async (req, res) => {
 
 
 async function checkAvailandUpdateDB(availData, productData) {
-  const databaseTitles = tripNameMap[productData.name];
-
-  if (!databaseTitles) {
-    sendEmailErr();
-    console.warn(`No matching DB title for Rezdy name: ${productData.name}`);
-    return;
-  }
-
-  const titles = Array.isArray(databaseTitles) ? databaseTitles : [databaseTitles];
+  //trips eru tengdar rezdy með product code, ekki titli
+  const code = productData.productCode;
 
   for (const session of availData) {
     const sessionDate = session.startTimeLocal.split(' ')[0];
     const availableSeats = session.seatsAvailable <= 0 ? 0 : 1;
     const today = new Date().toISOString().split('T')[0];
 
-      if (sessionDate < today) {
-        console.log(`Skipping past session date: ${sessionDate}`);
-        for (const title of titles) {
-          await pool.query(
-          `UPDATE trips SET availability = 0 WHERE title = $1 AND start_date = $2 RETURNING *`,
-          [title, sessionDate]
-          );
-    console.log(`Past trip ${title} (${sessionDate}) marked as availability = 0`);
-  }
-  continue;
-}
-
-    for (const title of titles) {
-      const result = await pool.query(
-        `UPDATE trips SET availability = $1 WHERE title = $2 AND start_date = $3 RETURNING *`,
-        [availableSeats, title, sessionDate]
+    if (sessionDate < today) {
+      console.log(`Skipping past session date: ${sessionDate}`);
+      await pool.query(
+        `UPDATE trips SET availability = 0 WHERE code = $1 AND start_date = $2`,
+        [code, sessionDate]
       );
+      console.log(`Past trip ${code} (${sessionDate}) marked as availability = 0`);
+      continue;
+    }
 
-      if (result.rowCount > 0) {
-        console.log(`Updated trip: ${title} on ${sessionDate} to availability = ${availableSeats}`);
-      } else {
-        console.warn(`No DB match for ${title} on ${sessionDate}`);
-      }
+    const result = await pool.query(
+      `UPDATE trips SET availability = $1 WHERE code = $2 AND start_date = $3`,
+      [availableSeats, code, sessionDate]
+    );
+
+    if (result.rowCount > 0) {
+      console.log(`Updated trip: ${code} on ${sessionDate} to availability = ${availableSeats}`);
+    } else {
+      console.warn(`No DB match for ${code} on ${sessionDate}`);
     }
   }
 
@@ -311,7 +301,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const yearStart = `${SYNC_YEAR}-01-01`;
   const from = today > yearStart ? today : yearStart;
   const to = `${SYNC_YEAR}-12-31`;
-  const added = [], updated = [], endDatesFixed = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
+  const added = [], updated = [], renamed = [], endDatesFixed = [], typesFixed = [], deleted = [], notInRezdy = [], coded = [], newProducts = [], errors = [];
 
   const products = (await fetchAllProductsFromRezdy())
     .filter(product => !IGNORED_PRODUCT_CODES.includes(product.productCode));
@@ -323,6 +313,17 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
 
   //utan transaction: ALTER TABLE læsir allri töflunni þar til transaction klárast, og þá getur síðan ekki lesið trips
   await pool.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS added_by_sync BOOLEAN NOT NULL DEFAULT false");
+  await pool.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS trip_type VARCHAR(20) NOT NULL DEFAULT 'journey'");
+
+  //excursion eða journey eftir flokknum á ishestar.is, parað saman með síðasta hlutanum í link
+  //ef ekkert kemur frá síðunni breytum við engu svo allt verði ekki journey
+  let excursionSlugs = [];
+  try {
+    excursionSlugs = await fetchExcursionSlugs();
+  } catch (err) {
+    errors.push(`ishestar.is: ${err.message}`);
+  }
+  if (excursionSlugs.length === 0) errors.push("ishestar.is skilaði engum excursions, trip_type ekki uppfært");
 
   const client = await pool.connect();
   try {
@@ -346,6 +347,18 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       if (result.rowCount > 0) coded.push(`${title} -> ${code} (${result.rowCount})`);
     }
 
+    if (excursionSlugs.length > 0) {
+      const withLinks = await client.query("SELECT id, title, link, trip_type, to_char(start_date, 'YYYY-MM-DD') AS start FROM trips WHERE link IS NOT NULL");
+      for (const row of withLinks.rows) {
+        const slug = row.link.split('/').filter(Boolean).pop();
+        const tripType = excursionSlugs.includes(slug) ? 'excursion' : 'journey';
+        if (row.trip_type !== tripType) {
+          typesFixed.push(`${row.title} ${row.start}: ${row.trip_type} -> ${tripType}`);
+          await client.query("UPDATE trips SET trip_type = $1 WHERE id = $2", [tripType, row.id]);
+        }
+      }
+    }
+
     //líka codes sem eru í databaseinu en ekki lengur í rezdy (product eytt)
     const dbCodes = await client.query("SELECT DISTINCT code FROM trips WHERE code IS NOT NULL");
     const codes = new Set([...Object.keys(rezdyNames), ...dbCodes.rows.map(r => r.code)]);
@@ -366,10 +379,22 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
         if (date >= from && date <= to) sessionsByDate.set(date, session);
       }
 
+      //ferðir á SYNC_YEAR með þessum code fá nafnið á rezdy product-inu (eldri ferðir eru látnar vera)
+      if (rezdyNames[code]) {
+        const name = rezdyNames[code].trim();
+        const old = await client.query(
+          "UPDATE trips SET title = $1 WHERE code = $2 AND start_date BETWEEN $3 AND $4 AND title IS DISTINCT FROM $1 RETURNING title",
+          [name, code, from, to]);
+        for (const [oldTitle, count] of Object.entries(old.rows.reduce((acc, r) => ({ ...acc, [r.title]: (acc[r.title] || 0) + 1 }), {}))) {
+          renamed.push(`${oldTitle} -> ${name} (${count})`);
+        }
+      }
+
       //nýjasta ferðin með þessum code, notum link, riding_days og difficulty úr henni
+      //(tripNameMap er bara notað til að gefa handvirkt settum ferðum code, hér er allt eftir code)
       //(og lengdina ef rezdy sendir ekki endTimeLocal)
       const template = await client.query(
-        `SELECT title, link, riding_days, difficulty, (end_date - start_date) AS length
+        `SELECT title, link, riding_days, difficulty, trip_type, (end_date - start_date) AS length
          FROM trips WHERE code = $1 ORDER BY start_date DESC LIMIT 1`,
         [code]
       );
@@ -393,12 +418,14 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       for (const [date, session] of sessionsByDate) {
         if (existingDates.has(date)) continue;
         const availability = session.seatsAvailable <= 0 ? 0 : 1;
-        added.push(`${trip.title} ${date}`);
+        //titillinn kemur beint úr rezdy, restin úr template ferðinni
+        const title = (rezdyNames[code] || trip.title).trim();
+        added.push(`${title} ${date}`);
         //end_date úr rezdy, annars sama lengd og template ferðin
         await client.query(
-          `INSERT INTO trips (title, start_date, end_date, link, riding_days, difficulty, availability, code, added_by_sync)
-           VALUES ($1, $2::date, COALESCE($9::date, $2::date + $3::int), $4, $5, $6, $7, $8, true)`,
-          [trip.title, date, trip.length, trip.link, trip.riding_days, trip.difficulty, availability, code, sessionEndDate(session)]
+          `INSERT INTO trips (title, start_date, end_date, link, riding_days, difficulty, availability, code, added_by_sync, trip_type)
+           VALUES ($1, $2::date, COALESCE($9::date, $2::date + $3::int), $4, $5, $6, $7, $8, true, $10)`,
+          [title, date, trip.length, trip.link, trip.riding_days, trip.difficulty, availability, code, sessionEndDate(session), trip.trip_type]
         );
       }
 
@@ -446,7 +473,9 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   const report = [
     `Bætt við (${added.length}):`, ...added, '',
     `Availability uppfært (${updated.length}):`, ...updated, '',
+    `Nafn lagað eftir Rezdy (${renamed.length}):`, ...renamed, '',
     `End date lagaður (${endDatesFixed.length}):`, ...endDatesFixed, '',
+    `Tegund ferðar lagfærð eftir ishestar.is (${typesFixed.length}):`, ...typesFixed, '',
     `Eytt (${deleted.length}):`, ...deleted, '',
     `Ekki í Rezdy en sett inn handvirkt, ekki eytt (${notInRezdy.length}):`, ...notInRezdy, '',
     `Fengu code (${coded.length}):`, ...coded, '',
@@ -456,7 +485,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   ].join('\n');
   console.log(`${dryRun ? '[DRY RUN] ' : ''}Rezdy sync búið (${from} - ${to})\n${report}`);
 
-  if (!dryRun && (added.length || endDatesFixed.length || deleted.length || newProducts.length || errors.length)) {
+  if (!dryRun && (added.length || renamed.length || endDatesFixed.length || typesFixed.length || deleted.length || newProducts.length || errors.length)) {
     sendReport('Rezdy sync', report);
   }
 }
