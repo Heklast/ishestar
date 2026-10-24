@@ -10,7 +10,8 @@ CREATE TABLE trips (
   difficulty VARCHAR(255) NOT NULL,
   availability INTEGER,
   code VARCHAR(20),
-  added_by_sync BOOLEAN NOT NULL DEFAULT false
+  added_by_sync BOOLEAN NOT NULL DEFAULT false,
+  trip_type VARCHAR(20) NOT NULL DEFAULT 'journey'
 );
 
 DELETE from trips;

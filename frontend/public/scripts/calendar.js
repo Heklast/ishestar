@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', async function () {
           start: start,
           end: end,
           difficulty: trip.difficulty,
-          backgroundColor: getColor(trip.difficulty), 
+          trip_type: trip.trip_type,
+          backgroundColor: getColor(trip.trip_type),
           textColor: '#FFFFFF',
           href: trip.link,
           riding_days: trip.riding_days,
@@ -55,17 +56,10 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   /**
-   * Litir based on difficulty
+   * Litir based on trip type (journey er sjálfgefið)
    */
-  function getColor(level) {
-    const colors = ['#8A9A5B','#2C5F2D','#6B3F1F']; //'#6B3F1F' bruni
-    const difficultyLevels = ['beginner','intermediate', 'advanced'];
-    for (let i = 0; i < difficultyLevels.length; i++) {
-      if (level === difficultyLevels[i]) {
-        return colors[i];
-      }
-    }
-    return;
+  function getColor(type) {
+    return type === 'excursion' ? '#6B3F1F' : '#2C5F2D'; //bruni : grænn
   }
 
   function filterTrips(trips) {
@@ -141,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
       info.el.addEventListener('mouseleave', function(){
-        const originalColor = getColor(info.event.extendedProps.difficulty);
+        const originalColor = getColor(info.event.extendedProps.trip_type);
         let relatedEvents=document.querySelectorAll(`[data-event-id="${info.event.id}"]`);
         relatedEvents.forEach(el => {
           if (isFull) {
