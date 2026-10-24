@@ -8,7 +8,7 @@ const fs = require("fs");
 const getExcelData = require("./excel.js");
 const { tripNameMap } = require('./tripNameMap');
 const { fetchProductFromRezdy, fetchAvailFromRezdy, fetchAllProductsFromRezdy } = require("./rezdy.js");
-const { fetchExcursionSlugs } = require("./website.js");
+const { EXCURSION_SLUGS } = require("./excursions.js");
 const nodemailer=require('nodemailer');
 
 const EMAIL_PASS= process.env.EMAIL_PASS;
@@ -315,16 +315,6 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
   await pool.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS added_by_sync BOOLEAN NOT NULL DEFAULT false");
   await pool.query("ALTER TABLE trips ADD COLUMN IF NOT EXISTS trip_type VARCHAR(20) NOT NULL DEFAULT 'journey'");
 
-  //excursion eða journey eftir flokknum á ishestar.is, parað saman með síðasta hlutanum í link
-  //ef ekkert kemur frá síðunni breytum við engu svo allt verði ekki journey
-  let excursionSlugs = [];
-  try {
-    excursionSlugs = await fetchExcursionSlugs();
-  } catch (err) {
-    errors.push(`ishestar.is: ${err.message}`);
-  }
-  if (excursionSlugs.length === 0) errors.push("ishestar.is skilaði engum excursions, trip_type ekki uppfært");
-
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -347,15 +337,14 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
       if (result.rowCount > 0) coded.push(`${title} -> ${code} (${result.rowCount})`);
     }
 
-    if (excursionSlugs.length > 0) {
-      const withLinks = await client.query("SELECT id, title, link, trip_type, to_char(start_date, 'YYYY-MM-DD') AS start FROM trips WHERE link IS NOT NULL");
-      for (const row of withLinks.rows) {
-        const slug = row.link.split('/').filter(Boolean).pop();
-        const tripType = excursionSlugs.includes(slug) ? 'excursion' : 'journey';
-        if (row.trip_type !== tripType) {
-          typesFixed.push(`${row.title} ${row.start}: ${row.trip_type} -> ${tripType}`);
-          await client.query("UPDATE trips SET trip_type = $1 WHERE id = $2", [tripType, row.id]);
-        }
+    //excursion ef síðasti hluti link er í EXCURSION_SLUGS (excursions.js), annars journey
+    const withLinks = await client.query("SELECT id, title, link, trip_type, to_char(start_date, 'YYYY-MM-DD') AS start FROM trips WHERE link IS NOT NULL");
+    for (const row of withLinks.rows) {
+      const slug = row.link.split('/').filter(Boolean).pop();
+      const tripType = EXCURSION_SLUGS.includes(slug) ? 'excursion' : 'journey';
+      if (row.trip_type !== tripType) {
+        typesFixed.push(`${row.title} ${row.start}: ${row.trip_type} -> ${tripType}`);
+        await client.query("UPDATE trips SET trip_type = $1 WHERE id = $2", [tripType, row.id]);
       }
     }
 
@@ -475,7 +464,7 @@ async function syncTripsWithRezdy({ dryRun = false } = {}) {
     `Availability uppfært (${updated.length}):`, ...updated, '',
     `Nafn lagað eftir Rezdy (${renamed.length}):`, ...renamed, '',
     `End date lagaður (${endDatesFixed.length}):`, ...endDatesFixed, '',
-    `Tegund ferðar lagfærð eftir ishestar.is (${typesFixed.length}):`, ...typesFixed, '',
+    `Tegund ferðar lagfærð eftir excursions.js (${typesFixed.length}):`, ...typesFixed, '',
     `Eytt (${deleted.length}):`, ...deleted, '',
     `Ekki í Rezdy en sett inn handvirkt, ekki eytt (${notInRezdy.length}):`, ...notInRezdy, '',
     `Fengu code (${coded.length}):`, ...coded, '',
